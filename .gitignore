@@ -1,0 +1,7 @@
+.venv/
+.venv_311/
+.idea/
+.DS_Store
+.pytest_cache/
+__pycache__/
+*.pyc
