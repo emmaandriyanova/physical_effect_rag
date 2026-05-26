@@ -1,0 +1,17 @@
+# Для работы с данными
+pandas
+numpy
+lancedb
+pyarrow
+
+# Для эмбеддингов (используем Sentence Transformers)
+sentence-transformers
+
+# Для работы с XML
+lxml
+
+# Для HTTP запросов к LM Studio
+requests
+
+# Для прогресс-бара (удобно)
+tqdm

@@ -1,0 +1,5 @@
+{
+  "embedding_model": "intfloat/multilingual-e5-small",
+  "num_chunks": 9540,
+  "embedding_dim": 384
+}

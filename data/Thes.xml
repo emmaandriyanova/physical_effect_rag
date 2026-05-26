@@ -1,0 +1,2748 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot xmlns:od="urn:schemas-microsoft-com:officedata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:noNamespaceSchemaLocation="Thes.xsd" generated="2026-02-28T10:46:58">
+<Thes>
+<id>2CONFAZ</id>
+<name>2 фазы</name>
+<parent>CONTACT</parent>
+</Thes>
+<Thes>
+<id>2CONFAZ1</id>
+<name>1:2</name>
+<parent>2CONFAZ</parent>
+</Thes>
+<Thes>
+<id>2CONFAZ2</id>
+<name>1:2:1</name>
+<parent>2CONFAZ</parent>
+</Thes>
+<Thes>
+<id>2MIXFAZ</id>
+<name>2 фазы</name>
+<parent>MIXTURE</parent>
+</Thes>
+<Thes>
+<id>3CONFAZ</id>
+<name>3 фазы</name>
+<parent>CONTACT</parent>
+</Thes>
+<Thes>
+<id>3CONFAZ1</id>
+<name>1:2:3</name>
+<parent>3CONFAZ</parent>
+</Thes>
+<Thes>
+<id>3MIXFAZ</id>
+<name>3 фазы</name>
+<parent>MIXTURE</parent>
+</Thes>
+<Thes>
+<id>ACTIONS</id>
+<name>Воздействия</name>
+<parent>VOCBL</parent>
+</Thes>
+<Thes>
+<id>ALLACTIONS</id>
+<name>Воздействия</name>
+<parent>SERVICE</parent>
+</Thes>
+<Thes>
+<id>APERIODIC</id>
+<name>Непериодическое</name>
+<parent>POLY</parent>
+</Thes>
+<Thes>
+<id>C</id>
+<name>Специальные характеристики</name>
+<parent>DESCOBJECT</parent>
+</Thes>
+<Thes>
+<id>C1</id>
+<name>МАГНИТО-ИЗОТРОПНЫЙ</name>
+<parent>CM</parent>
+</Thes>
+<Thes>
+<id>C10</id>
+<name>НЕОРГАНИЧЕСКИЙ</name>
+<parent>CR</parent>
+</Thes>
+<Thes>
+<id>C11</id>
+<name>ЛИНЕЙНЫЙ</name>
+<parent>COP</parent>
+</Thes>
+<Thes>
+<id>C12</id>
+<name>НЕЛИНЕЙНЫЙ</name>
+<parent>COP</parent>
+</Thes>
+<Thes>
+<id>C13</id>
+<name>ИДЕАЛЬНЫЙ</name>
+<parent>CS</parent>
+</Thes>
+<Thes>
+<id>C14</id>
+<name>НЕИДЕАЛЬНЫЙ</name>
+<parent>CS</parent>
+</Thes>
+<Thes>
+<id>C15</id>
+<name>МЕТАСТАБИЛЬНЫЙ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>C16</id>
+<name>ПОВЕРХНОСТЬ</name>
+<parent>CPF</parent>
+</Thes>
+<Thes>
+<id>C17</id>
+<name>ТОНКАЯ ПЛЕНКА</name>
+<parent>CPF</parent>
+</Thes>
+<Thes>
+<id>C18</id>
+<name>ОПРЕДЕЛЕННАЯ ФОРМА</name>
+<parent>CPF</parent>
+</Thes>
+<Thes>
+<id>C19</id>
+<name>КОНКРЕТНЫЕ РАЗМЕРЫ</name>
+<parent>CP</parent>
+</Thes>
+<Thes>
+<id>C2</id>
+<name>ОПТИЧЕСКИ-ИЗОТРОП.</name>
+<parent>COS</parent>
+</Thes>
+<Thes>
+<id>C20</id>
+<name>МАТЕРИАЛЬНАЯ ТОЧКА</name>
+<parent>CP</parent>
+</Thes>
+<Thes>
+<id>C3</id>
+<name>МЕХАНИЧ.-ИЗОТРОПН.</name>
+<parent>CD</parent>
+</Thes>
+<Thes>
+<id>C4</id>
+<name>ЭЛЕКТРИЧ.-ИЗОТРОП.</name>
+<parent>CE</parent>
+</Thes>
+<Thes>
+<id>C5</id>
+<name>МАГНИТО-АНИЗОТРОП.</name>
+<parent>CM</parent>
+</Thes>
+<Thes>
+<id>C6</id>
+<name>ОПТИЧЕСКИ-АНИЗОТР.</name>
+<parent>COS</parent>
+</Thes>
+<Thes>
+<id>C7</id>
+<name>МЕХАНИЧ.-АНИЗОТРОП</name>
+<parent>CD</parent>
+</Thes>
+<Thes>
+<id>C8</id>
+<name>ЭЛЕКТР.-АНИЗОТРОП.</name>
+<parent>CE</parent>
+</Thes>
+<Thes>
+<id>C9</id>
+<name>ОРГАНИЧЕСКИЙ</name>
+<parent>CR</parent>
+</Thes>
+<Thes>
+<id>CD</id>
+<name>МЕХАНИЧЕСКИЕ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>CE</id>
+<name>ЭЛЕКТРИЧЕСКИЕ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>CHANGE</id>
+<name>Изменение</name>
+<parent>CHARACTER</parent>
+</Thes>
+<Thes>
+<id>CHARACTER</id>
+<name>Характер изменения физической величины</name>
+<parent>SERVICE</parent>
+</Thes>
+<Thes>
+<id>CM</id>
+<name>МАГНИТНЫЕ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>CO</id>
+<name>ОПТИЧЕСКИЕ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>CONST</id>
+<name>Постоянство</name>
+<parent>CHARACTER</parent>
+</Thes>
+<Thes>
+<id>CONTACT</id>
+<name>Контакт</name>
+<parent>POLYFAZ</parent>
+</Thes>
+<Thes>
+<id>COP</id>
+<name>ПРЕЛОМЛЕНИЕ</name>
+<parent>CO</parent>
+</Thes>
+<Thes>
+<id>COS</id>
+<name>ПОЛЯРИЗАЦИЯ</name>
+<parent>CO</parent>
+</Thes>
+<Thes>
+<id>CP</id>
+<name>ПРОСТРАНСТВЕННЫЕ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>CPF</id>
+<name>ФОРМА</name>
+<parent>CP</parent>
+</Thes>
+<Thes>
+<id>CR</id>
+<name>ОРГАНИЧЕСКИЕ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>CS</id>
+<name>СОСТАВ</name>
+<parent>C</parent>
+</Thes>
+<Thes>
+<id>D</id>
+<name>Механическое состояние</name>
+<parent>DESCOBJECT</parent>
+</Thes>
+<Thes>
+<id>D1</id>
+<name>ДВИЖУЩИЙСЯ</name>
+<parent>D</parent>
+</Thes>
+<Thes>
+<id>D2</id>
+<name>ДВИЖ.ПОСТУПАТЕЛЬНО</name>
+<parent>D1</parent>
+</Thes>
+<Thes>
+<id>D3</id>
+<name>ВРАЩАЮЩИЙСЯ</name>
+<parent>D1</parent>
+</Thes>
+<Thes>
+<id>D4</id>
+<name>КОЛЕБЛЮЩИЙСЯ</name>
+<parent>D1</parent>
+</Thes>
+<Thes>
+<id>D5</id>
+<name>ВЯЗКИЙ</name>
+<parent>D</parent>
+</Thes>
+<Thes>
+<id>D6</id>
+<name>УПРУГО ДЕФОРМИРОВ.</name>
+<parent>D8</parent>
+</Thes>
+<Thes>
+<id>D7</id>
+<name>ПЛАСТИЧ.ДЕФОРМИРОВ</name>
+<parent>D8</parent>
+</Thes>
+<Thes>
+<id>D8</id>
+<name>ДЕФОРМИРОВАННЫЙ</name>
+<parent>D</parent>
+</Thes>
+<Thes>
+<id>DEC</id>
+<name>Уменьшение</name>
+<parent>MONO</parent>
+</Thes>
+<Thes>
+<id>DECDEG</id>
+<name>Скачкообразное</name>
+<parent>DEC</parent>
+</Thes>
+<Thes>
+<id>DECLINE</id>
+<name>Линейное</name>
+<parent>DEC</parent>
+</Thes>
+<Thes>
+<id>DECVIP</id>
+<name>Выпуклое</name>
+<parent>DEC</parent>
+</Thes>
+<Thes>
+<id>DECVOG</id>
+<name>Вогнутое</name>
+<parent>DEC</parent>
+</Thes>
+<Thes>
+<id>DESCOBJECT</id>
+<name>Описание (фазы) объекта</name>
+<parent>VOCBL</parent>
+</Thes>
+<Thes>
+<id>E</id>
+<name>Электрическая проводимость</name>
+<parent>DESCOBJECT</parent>
+</Thes>
+<Thes>
+<id>E1</id>
+<name>ПРОВОДНИК</name>
+<parent>E</parent>
+</Thes>
+<Thes>
+<id>E10</id>
+<name>ПЬЕЗОЭЛЕКТРИК</name>
+<parent>E9</parent>
+</Thes>
+<Thes>
+<id>E11</id>
+<name>ПИРОЭЛЕКТРИК</name>
+<parent>E9</parent>
+</Thes>
+<Thes>
+<id>E12</id>
+<name>СЕГНЕТОЭЛЕКТРИК</name>
+<parent>E9</parent>
+</Thes>
+<Thes>
+<id>E2</id>
+<name>МЕТАЛЛИЧ.ПРОВОДНИК</name>
+<parent>E1</parent>
+</Thes>
+<Thes>
+<id>E3</id>
+<name>ЭЛЕКТРОЛИТ</name>
+<parent>E1</parent>
+</Thes>
+<Thes>
+<id>E4</id>
+<name>ПРОВ.СО СМЕШ.ПРОВ.</name>
+<parent>E1</parent>
+</Thes>
+<Thes>
+<id>E5</id>
+<name>СВЕРХПРОВОДНИК</name>
+<parent>E</parent>
+</Thes>
+<Thes>
+<id>E6</id>
+<name>ПОЛУПРОВОДНИК</name>
+<parent>E1</parent>
+</Thes>
+<Thes>
+<id>E7</id>
+<name>П/ПРОВ.С СОБС.ПРОВ</name>
+<parent>E6</parent>
+</Thes>
+<Thes>
+<id>E8</id>
+<name>П/ПР.С НЕСОБС.ПРОВ</name>
+<parent>E6</parent>
+</Thes>
+<Thes>
+<id>E9</id>
+<name>ДИЭЛЕКТРИК</name>
+<parent>E</parent>
+</Thes>
+<Thes>
+<id>EXT_ACTIONS</id>
+<name>Внешнее</name>
+<parent>ACTIONS</parent>
+</Thes>
+<Thes>
+<id>F</id>
+<name>Фазовое состояние</name>
+<parent>DESCOBJECT</parent>
+</Thes>
+<Thes>
+<id>F1</id>
+<name>ГАЗ</name>
+<parent>F</parent>
+</Thes>
+<Thes>
+<id>F10</id>
+<name>КВАНТОВАЯ ЖИДКОСТЬ</name>
+<parent>F2</parent>
+</Thes>
+<Thes>
+<id>F11</id>
+<name>ЖИДКИЙ КРИСТАЛЛ</name>
+<parent>F2</parent>
+</Thes>
+<Thes>
+<id>F2</id>
+<name>ЖИДКОСТЬ</name>
+<parent>F</parent>
+</Thes>
+<Thes>
+<id>F3</id>
+<name>ПЛАЗМА</name>
+<parent>F</parent>
+</Thes>
+<Thes>
+<id>F4</id>
+<name>ТВЕРДОЕ ТЕЛО</name>
+<parent>F</parent>
+</Thes>
+<Thes>
+<id>F5</id>
+<name>КРИСТАЛЛИЧ.ТВ.ТЕЛО</name>
+<parent>F4</parent>
+</Thes>
+<Thes>
+<id>F6</id>
+<name>АМОРФНОЕ ТВ.ТЕЛО</name>
+<parent>F4</parent>
+</Thes>
+<Thes>
+<id>F7</id>
+<name>МОНОКРИСТ.ТВ.ТЕЛО</name>
+<parent>F5</parent>
+</Thes>
+<Thes>
+<id>F8</id>
+<name>ПОЛИКРИСТ.ТВ.ТЕЛО</name>
+<parent>F5</parent>
+</Thes>
+<Thes>
+<id>F9</id>
+<name>НОРМАЛЬН. ЖИДКОСТЬ</name>
+<parent>F2</parent>
+</Thes>
+<Thes>
+<id>GARMONIC</id>
+<name>Гармоническое</name>
+<parent>PERIODIC</parent>
+</Thes>
+<Thes>
+<id>INC</id>
+<name>Увеличение</name>
+<parent>MONO</parent>
+</Thes>
+<Thes>
+<id>INCDEG</id>
+<name>Скачкообразное</name>
+<parent>INC</parent>
+</Thes>
+<Thes>
+<id>INCLINE</id>
+<name>Линейное</name>
+<parent>INC</parent>
+</Thes>
+<Thes>
+<id>INCVIP</id>
+<name>Выпуклое</name>
+<parent>INC</parent>
+</Thes>
+<Thes>
+<id>INCVOG</id>
+<name>Вогнутое</name>
+<parent>INC</parent>
+</Thes>
+<Thes>
+<id>INT_ACTIONS</id>
+<name>Внутреннее</name>
+<parent>ACTIONS</parent>
+</Thes>
+<Thes>
+<id>LPERIODIC</id>
+<name>Почти периодическое</name>
+<parent>APERIODIC</parent>
+</Thes>
+<Thes>
+<id>M</id>
+<name>Магнитная структура</name>
+<parent>DESCOBJECT</parent>
+</Thes>
+<Thes>
+<id>M1</id>
+<name>ДИАМАГНЕТИК</name>
+<parent>M</parent>
+</Thes>
+<Thes>
+<id>M2</id>
+<name>ПАРАМАГНЕТИК</name>
+<parent>M</parent>
+</Thes>
+<Thes>
+<id>M3</id>
+<name>ФЕРРОМАГНЕТИК</name>
+<parent>M</parent>
+</Thes>
+<Thes>
+<id>M4</id>
+<name>АНТИФЕРРОМАГНЕТИК</name>
+<parent>M</parent>
+</Thes>
+<Thes>
+<id>M5</id>
+<name>ФЕРРИМАГНЕТИК</name>
+<parent>M</parent>
+</Thes>
+<Thes>
+<id>MIXTURE</id>
+<name>Смесь</name>
+<parent>POLYFAZ</parent>
+</Thes>
+<Thes>
+<id>MONO</id>
+<name>Монотонное</name>
+<parent>CHANGE</parent>
+</Thes>
+<Thes>
+<id>MONOFAZ</id>
+<name>Однофазное</name>
+<parent>STRUCTOBJECT</parent>
+</Thes>
+<Thes>
+<id>NODE_TYPE</id>
+<name>Тип вершины</name>
+<parent>PAR_DESC</parent>
+</Thes>
+<Thes>
+<id>NODE_TYPE_NO</id>
+<name>Противоречит</name>
+<parent>NODE_TYPE</parent>
+</Thes>
+<Thes>
+<id>NODE_TYPE_UN</id>
+<name>Нет информации</name>
+<parent>NODE_TYPE</parent>
+</Thes>
+<Thes>
+<id>NODE_TYPE_YES</id>
+<name>Соответствует</name>
+<parent>NODE_TYPE</parent>
+</Thes>
+<Thes>
+<id>O</id>
+<name>Оптическое состояние</name>
+<parent>DESCOBJECT</parent>
+</Thes>
+<Thes>
+<id>O1</id>
+<name>ПРОЗРАЧНЫЙ</name>
+<parent>O</parent>
+</Thes>
+<Thes>
+<id>O2</id>
+<name>ОПТИЧЕС.НЕОДНОРОД.</name>
+<parent>O</parent>
+</Thes>
+<Thes>
+<id>O3</id>
+<name>СИЛЬНО РАССЕИВАЮЩ.</name>
+<parent>O</parent>
+</Thes>
+<Thes>
+<id>O4</id>
+<name>ОПТИЧЕСКИ АКТИВНЫЙ</name>
+<parent>O</parent>
+</Thes>
+<Thes>
+<id>O5</id>
+<name>ЛЮМИНОФОР</name>
+<parent>O</parent>
+</Thes>
+<Thes>
+<id>PAR_DESC</id>
+<name>Признаки ФЭ</name>
+<parent>PARAMETERS</parent>
+</Thes>
+<Thes>
+<id>PAR_TREE</id>
+<name>Тип вершины И/ИЛИ дерева</name>
+<parent>PARAMETERS</parent>
+</Thes>
+<Thes>
+<id>PARAMETERS</id>
+<name>Параметры вершин</name>
+<parent>SERVICE</parent>
+</Thes>
+<Thes>
+<id>PEREHOD</id>
+<name>Переходное</name>
+<parent>APERIODIC</parent>
+</Thes>
+<Thes>
+<id>PERIODIC</id>
+<name>Периодическое</name>
+<parent>POLY</parent>
+</Thes>
+<Thes>
+<id>POLY</id>
+<name>Немонотонное</name>
+<parent>CHANGE</parent>
+</Thes>
+<Thes>
+<id>POLYFAZ</id>
+<name>Многофазное</name>
+<parent>STRUCTOBJECT</parent>
+</Thes>
+<Thes>
+<id>POLYGARMONIC</id>
+<name>Полигармоническое</name>
+<parent>PERIODIC</parent>
+</Thes>
+<Thes>
+<id>ROOT</id>
+<name>Корень тезауруса</name>
+<parent></parent>
+</Thes>
+<Thes>
+<id>SERVICE</id>
+<name>Вспомогательные словари</name>
+<parent>ROOT</parent>
+</Thes>
+<Thes>
+<id>STRUCTOBJECT</id>
+<name>Структура</name>
+<parent>VOCBL</parent>
+</Thes>
+<Thes>
+<id>TREE_AND</id>
+<name>И-вершина</name>
+<parent>PAR_TREE</parent>
+</Thes>
+<Thes>
+<id>TREE_LEAF</id>
+<name>ЛИСТ-вершина</name>
+<parent>PAR_TREE</parent>
+</Thes>
+<Thes>
+<id>TREE_OR</id>
+<name>ИЛИ-вершина</name>
+<parent>PAR_TREE</parent>
+</Thes>
+<Thes>
+<id>VOCBL</id>
+<name>Cловари</name>
+<parent>ROOT</parent>
+</Thes>
+<Thes>
+<id>VOZ1</id>
+<name>Электрическое поле</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ1</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL_1</id>
+<name>НАПРЯЖЕННОСТЬ ЭЛ.ПОЛЯ (В/М)</name>
+<parent>VOZ1_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL_2</id>
+<name>РАЗНОСТЬ ПОТЕНЦИАЛОВ (В)</name>
+<parent>VOZ1_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL_3</id>
+<name>ЭЛЕКТРОДВИЖУЩАЯ СИЛА (В)</name>
+<parent>VOZ1_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL_4</id>
+<name>ДЛИТЕЛЬНОСТЬ ИМПУЛЬСА (С)</name>
+<parent>VOZ1_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL_5</id>
+<name>ЧАСТОТА КОЛЕБАНИЙ ЭЛ.ПОЛЯ (Гц)</name>
+<parent>VOZ1_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL_6</id>
+<name>МОЩНОСТЬ ИМПУЛЬСА (Вт)</name>
+<parent>VOZ1_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ1_FIZVEL_7</id>
+<name>ГРАДИЕНТ НАПРЯЖ.ЭЛ.ПОЛЯ(В/м^2)</name>
+<parent>VOZ1_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ1_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ1</parent>
+</Thes>
+<Thes>
+<id>VOZ1_PROS1</id>
+<name>ОДНОРОДНОЕ</name>
+<parent>VOZ1_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ1_PROS2</id>
+<name>НЕОДНОРОДНОЕ</name>
+<parent>VOZ1_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ1_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ1</parent>
+</Thes>
+<Thes>
+<id>VOZ1_SPEC1</id>
+<name>СЛАБОЕ</name>
+<parent>VOZ1_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ1_SPEC2</id>
+<name>СИЛЬНОЕ</name>
+<parent>VOZ1_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ1_SPEC3</id>
+<name>СВЕРХСИЛЬНОЕ</name>
+<parent>VOZ1_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ1_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ1</parent>
+</Thes>
+<Thes>
+<id>VOZ1_VREM1</id>
+<name>ПОСТОЯННОЕ</name>
+<parent>VOZ1_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ1_VREM2</id>
+<name>ПЕРЕМЕННОЕ</name>
+<parent>VOZ1_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ1_VREM3</id>
+<name>ИМПУЛЬСНОЕ</name>
+<parent>VOZ1_VREM2</parent>
+</Thes>
+<Thes>
+<id>VOZ1_VREM4</id>
+<name>ВЫСОКОЧАСТОТНОЕ</name>
+<parent>VOZ1_VREM6</parent>
+</Thes>
+<Thes>
+<id>VOZ1_VREM5</id>
+<name>НИЗКОЧАСТОТНОЕ</name>
+<parent>VOZ1_VREM6</parent>
+</Thes>
+<Thes>
+<id>VOZ1_VREM6</id>
+<name>ПЕРИОДИЧЕСКОЕ</name>
+<parent>VOZ1_VREM2</parent>
+</Thes>
+<Thes>
+<id>VOZ10</id>
+<name>Электрический ток</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ10_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ10</parent>
+</Thes>
+<Thes>
+<id>VOZ10_FIZVEL_1</id>
+<name>СИЛА ЭЛЕКТРИЧЕСКОГО ТОКА (A)</name>
+<parent>VOZ10_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ10_FIZVEL_2</id>
+<name>ЧАСТОТА КОЛЕБАНИЙ (Гц)</name>
+<parent>VOZ10_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ10_FIZVEL_3</id>
+<name>ДЕЙСТВ.ЗНАЧЕНИЕ СИЛЫ ТОКА(А)</name>
+<parent>VOZ10_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ10_FIZVEL_4</id>
+<name>СРЕД.ЗН.СИЛЫ ТОКА ЗА ПЕРИОД(А)</name>
+<parent>VOZ10_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ10_FIZVEL_5</id>
+<name>ПЛОТНОСТЬ ЭЛ. ТОКА (А/М^2)</name>
+<parent>VOZ10_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ10_FIZVEL_6</id>
+<name>СКОР-ТЬ ИЗМЕНЕН.СИЛЫ ТОКА(А/С)</name>
+<parent>VOZ10_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ10_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ10</parent>
+</Thes>
+<Thes>
+<id>VOZ10_PROS1</id>
+<name>ОДНОРОДНЫЙ</name>
+<parent>VOZ10_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ10_PROS2</id>
+<name>НЕОДНОРОДНЫЙ</name>
+<parent>VOZ10_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ10_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ10</parent>
+</Thes>
+<Thes>
+<id>VOZ10_SPEC1</id>
+<name>ЭЛЕКТРОННЫЙ</name>
+<parent>VOZ10_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ10_SPEC2</id>
+<name>ИОННЫЙ</name>
+<parent>VOZ10_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ10_SPEC3</id>
+<name>ЭЛЕКТРОН.-ИОНН.</name>
+<parent>VOZ10_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ10</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM1</id>
+<name>ПОСТОЯННЫЙ</name>
+<parent>VOZ10_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM2</id>
+<name>ПЕРЕМЕННЫЙ</name>
+<parent>VOZ10_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM3</id>
+<name>СИНУСОИДАЛЬНЫЙ</name>
+<parent>VOZ10_VREM2</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM4</id>
+<name>НЕСИНУСОИДАЛЬН.</name>
+<parent>VOZ10_VREM2</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM5</id>
+<name>ИМПУЛЬСНЫЙ</name>
+<parent>VOZ10_VREM4</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM6</id>
+<name>ВИХРЕВОЙ</name>
+<parent>VOZ10_VREM4</parent>
+</Thes>
+<Thes>
+<id>VOZ10_VREM7</id>
+<name>ВЫСОКОЧАСТОТНЫЙ</name>
+<parent>VOZ10_VREM3</parent>
+</Thes>
+<Thes>
+<id>VOZ11</id>
+<name>Изменение параметров (параметрический)</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ11</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1</id>
+<name>Механика</name>
+<parent>VOZ11_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_1</id>
+<name>МАССА (КГ)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_10</id>
+<name>ПЛОСКИЙ УГОЛ (РАД)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_11</id>
+<name>УГЛОВАЯ СКОРОСТЬ (РАД/С)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_12</id>
+<name>УГЛОВОЕ УСКОРЕНИЕ(РАД/С^2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_13</id>
+<name>ПЕРЕМЕЩЕНИЕ (М)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_14</id>
+<name>ИМПУЛЬС (КГ*М/С)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_15</id>
+<name>МОМЕНТ ИМПУЛЬСА (КГ*М^2/С)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_16</id>
+<name>МОДУЛЬ ЮНГА (ПА)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_17</id>
+<name>МОДУЛЬ СДВИГА (ПА)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_18</id>
+<name>ОТНОСИТЕЛЬНАЯ ДЕФОРМАЦИЯ</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_19</id>
+<name>ОТНОСИТЕЛЬНЫЙ ОБЪЕМ</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_2</id>
+<name>МОМЕНТ ИНЕРЦИИ (КГ*М^2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_20</id>
+<name>СКОРОСТЬ ОТНОС.ДЕФОРМ. (С^-1)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_21</id>
+<name>АБСОЛЮТНОЕ УДЛИНЕН.(СЖАТИЕ)(М)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_22</id>
+<name>ПОВЕРХНОСТНОЕ НАТЯЖЕНИЕ (Н/М)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_23</id>
+<name>ПРЕДЕЛ ПРОЧНОСТИ (ПА)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_24</id>
+<name>ПРЕДЕЛ ТЕКУЧЕСТИ (ПА)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_25</id>
+<name>ДИНАМИЧЕСКАЯ ВЯЗКОСТЬ (ПА*С)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_26</id>
+<name>КИНЕМАТИЧ.ВЯЗКОСТЬ(ПА*c)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_27</id>
+<name>ТВЕРДОСТЬ (Н/М^2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_28</id>
+<name>КОЭФ-Т ГИДРОДИН.СОПРОТИВЛЕНИЯ</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_29</id>
+<name>КОЭФ-Т ПОГЛОЩ.АКУСТ.ВОЛН(М^-1)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_3</id>
+<name>ЛИНЕЙНЫЙ РАЗМЕР (М)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_30</id>
+<name>КРИВИЗНА ПОВЕРХНОСТИ (М^-1)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_31</id>
+<name>ПЛОТНОСТЬ ДИСЛОКАЦИИ (М^-2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_32</id>
+<name>СКОРОСТЬ ДЕФОРМАЦИИ (M/C)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_33</id>
+<name>СКОРОСТЬ ПОЛЗУЧЕСТИ (С^-1)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_34</id>
+<name>УДАРНАЯ ВЯЗКОСТЬ (Дж/М^2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_35</id>
+<name>К-ВО ТРЕЩИН В ЕД.ОБЪЕМА (М^-3)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_36</id>
+<name>ПОКАЗАТЕЛЬ ОБЩЕЙ ПОРИСТОСТИ</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_37</id>
+<name>ЧАСТОТА ВРАЩЕНИЯ (С^-1)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_38</id>
+<name>К.П.Д.</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_39</id>
+<name>ПЬЕЗОМОДУЛЬ (м/В)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_4</id>
+<name>ПЛОЩАДЬ (М^2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_40</id>
+<name>КОЭФ-Т ТРЕНИЯ</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_41</id>
+<name>КОЭФ-Т ЖЕСТКОСТИ ИЗНОСА</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_42</id>
+<name>ПОРИСТОСТЬ</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_43</id>
+<name>КОЭФ-Т ПРОНИЦАЕМОСТИ (м^2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_44</id>
+<name>ОТНОСИТЕЛЬНАЯ ВЛАЖНОСТЬ</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_5</id>
+<name>ОБЪЕМ (М^3)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_6</id>
+<name>ПЛОТНОСТЬ (КГ/М^3)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_7</id>
+<name>СКОРОСТЬ (М/С)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_8</id>
+<name>УСКОРЕНИЕ (М/С^2)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R1_9</id>
+<name>ГРАДИЕНТ СКОРОСТИ (C^-1)</name>
+<parent>VOZ11_FIZVEL_R1</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2</id>
+<name>Термодинамика</name>
+<parent>VOZ11_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_1</id>
+<name>ТЕМПЕРАТУРА (К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_10</id>
+<name>ТЕМПЕРАТУРА КЮРИ (К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_11</id>
+<name>ЭЛЕКТРОННАЯ ТЕМПЕРАТУРА (К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_12</id>
+<name>ШУМОВАЯ ТЕМПЕРАТУРА</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_13</id>
+<name>ОБЪЕМ (М^3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_14</id>
+<name>МАССА (КГ)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_15</id>
+<name>ПЛОТНОСТЬ(КГ/М^3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_16</id>
+<name>ДАВЛЕНИЕ (ПА)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_17</id>
+<name>РАЗНОСТЬ ДАВЛЕНИЙ (ПА)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_18</id>
+<name>ГРАДИЕНТ ДАВЛЕНИЯ (ПА/М)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_19</id>
+<name>МОЛЯРНАЯ ТЕПЛОЕМК.(ДЖ/МОЛЬ*К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_2</id>
+<name>ГРАДИЕНТ ТЕМПЕРАТУРЫ (К/M)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_20</id>
+<name>УДЕЛЬН.ТЕПЛОЕМКОСТЬ (ДЖ/КГ*К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_21</id>
+<name>КОЭФФИЦИЕНТ ТЕПЛОПРОВ.(ВТ/М*К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_22</id>
+<name>КОНЦЕНТРАЦИЯ (М^-3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_23</id>
+<name>МАССОВАЯ КОНЦЕНТРАЦИЯ (КГ/М^3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_24</id>
+<name>МОЛЯРНАЯ КОНЦЕНТРАЦ.(МОЛЬ/М^3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_25</id>
+<name>ОТНОСИТ.(ДОЛЕВАЯ) КОНЦЕНТРАЦИЯ</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_26</id>
+<name>ГРАДИЕНТ КОНЦЕНТРАЦИИ (М^-4)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_27</id>
+<name>РАЗНОСТЬ КОНЦЕНТРАЦИЙ (М^-3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_28</id>
+<name>СКОР.ИЗМ.МАСС.КОНЦ.(КГ/М^3*С)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_29</id>
+<name>СКОР-ТЬ ИЗМ.КОНЦЕН.(М^-3*С^-1)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_3</id>
+<name>РАЗНОСТЬ ТЕМПЕРАТУР (К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_30</id>
+<name>АДСОРБЦИОННАЯ СПОСОБН.(М^-2)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_31</id>
+<name>МОЛЯР.ТЕПЛОТА АДСОРБ.(ДЖ/МОЛЬ)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_32</id>
+<name>РАСТВОРИМОСТЬ (М^-3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_33</id>
+<name>КОЭФФИЦИЕНТ РАСПЫЛЕНИЯ(БЕЗРАЗ)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_34</id>
+<name>СТЕПЕНЬ ДАЛЬНЕГО ПОРЯДКА</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_35</id>
+<name>РАЗНОСТЬ МОЛЯРН.МАСС (КГ/МОЛЬ)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_36</id>
+<name>КОЭФ-Т ТЕРМОСТОЙКОСТИ (Дж/м*c)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_37</id>
+<name>АКТИВНОСТЬ</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_38</id>
+<name>СТЕПЕНЬ НЕСТЕХИОМЕТРИЧНОСТИ</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_39</id>
+<name>КОЭФФИЦИЕНТ ДИФФУЗИИ (М^2/С)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_4</id>
+<name>НЕОДНОРОДНАЯ ТЕМПЕРАТУРА (К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_40</id>
+<name>ЭНТРОПИЯ (ДЖ/К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_41</id>
+<name>КАТАЛИТ.АКТИВНОСТЬ(М^-3*С^-1)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_42</id>
+<name>ТЕМП.К-Т ЛИН.РАСШИРЕНИЯ (К^-1)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_43</id>
+<name>КОНЦЕНТРАЦИЯ ДЕФЕКТОВ (М^-3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_44</id>
+<name>ОТНОСИТЕЛЬНАЯ РАСТВОРИМОСТЬ</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_45</id>
+<name>СТЕПЕНЬ ПЕРЕСЫЩЕНИЯ РАСТВОРА</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_46</id>
+<name>АТОМНЫЙ ОБЪЕМ (М^3)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_47</id>
+<name>КРИТ.ДОЗА ОБР-Я ДЕФ-ТА ИОН/М^2</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_48</id>
+<name>К-Т ТЕМПЕРАТУРОПРОВОДН.(М^2/С)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_5</id>
+<name>СКОРОСТЬ ИЗМ.ТЕМПЕРАТУРЫ(К/С)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_6</id>
+<name>ТЕМПЕРАТУРА ФАЗОВОГО ПЕРЕХ.(К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_7</id>
+<name>ТЕМПЕРАТУРА ПЛАВЛЕНИЯ (К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_8</id>
+<name>ТЕМПЕРАТУРА КИПЕНИЯ (К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R2_9</id>
+<name>ТЕМ-РА ПЕРЕХ.В СВЕРХПР.СОСТ(К)</name>
+<parent>VOZ11_FIZVEL_R2</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3</id>
+<name>Электричество</name>
+<parent>VOZ11_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_1</id>
+<name>ЭЛЕКТРИЧЕСКИЙ ЗАРЯД (КЛ)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_10</id>
+<name>УДЕЛЬНОЕ ЭЛЕКТ.СОПРОТИВ.(ОМ*М)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_11</id>
+<name>УДЕЛЬНАЯ ЭЛЕКТ.ПРОВОДИМ.(СМ/М)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_12</id>
+<name>ПОТЕНЦИАЛ ИОНИЗАЦИИ (В)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_13</id>
+<name>КОЭФФИЦИЕНТ ИОНИЗАЦИИ (С^-1)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_14</id>
+<name>СТЕПЕНЬ ПОВЕРХНОСТН. ИОНИЗАЦИИ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_15</id>
+<name>ПОСТОЯННАЯ ХОЛЛА (М^3/КЛ)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_16</id>
+<name>ХОЛЛОВСКОЕ СОПРОТИВЛЕНИЕ (ОМ)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_17</id>
+<name>ТЕМПЕР.КОЭФФ.СОПРОТИВЛ. (К^-1)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_18</id>
+<name>ВРЕМЯ ПЕРЕПОЛЯРИЗАЦИИ (С)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_19</id>
+<name>ПЛОТНОСТЬ НОСИТЕЛЕЙ ТОКА(М^-3)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_2</id>
+<name>ПОВЕРХ.ПЛОТН.ЭЛ.ЗАР. (КЛ/М^2)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_20</id>
+<name>ТЕРМОЭЛЕКТРИЧ.ЭФ-СТЬ (К^-1)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_21</id>
+<name>ДОЛЯ ИОННОЙ(ЭЛЕКТР.) ПРОВОД-ТИ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_22</id>
+<name>ЭФФЕКТИВНОЕ СЕЧЕНИЕ РАССЕЯНИЯ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_23</id>
+<name>ТАНГЕНС УГЛА ДИЭЛЕКТРИЧ.ПОТЕРЬ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_24</id>
+<name>КОНЦЕНТРАЦИЯ ЭКСИТОНОВ (М^-3)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_25</id>
+<name>ЭЛЕКТРИЧЕСКАЯ ПРОЧНОСТЬ (В/М)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_26</id>
+<name>ИНТЕГРАЛЬНЫЙ КОЭФФИЦИЕНТ ИОННО-ЭЛЕКТРОННОЙ ЭМИССИИ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_27</id>
+<name>ИНТЕГРАЛЬНЫЙ КОЭФФИЦИЕНТ ИОННО-ИОННОЙ ЭМИССИИ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_28</id>
+<name>ИНТЕГРАЛЬНЫЙ КОЭФФИЦИЕНТ ЭЛЕКТРОННО-ЭЛЕКТРОННОЙ ЭМИССИИ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_3</id>
+<name>ЭЛЕКТРИЧ.МОМЕНТ ДИПОЛЯ (КЛ*М)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_4</id>
+<name>ПОЛЯРИЗОВАННОСТЬ (КЛ/М^2)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_5</id>
+<name>ДИЭЛЕКТРИЧЕСКАЯ ПРОНИЦАЕМОСТЬ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_6</id>
+<name>ДИЭЛЕКТРИЧЕСК. ВОСПРИИМЧИВОСТЬ</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_7</id>
+<name>ЭЛЕКТРИЧЕСКАЯ ЕМКОСТЬ(Ф)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_8</id>
+<name>ЭЛЕКТРИЧ. СОПРОТИВЛЕНИЕ (ОМ)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R3_9</id>
+<name>ЭЛЕКТРИЧЕСКАЯ ПРОВОДИМОСТЬ(СМ)</name>
+<parent>VOZ11_FIZVEL_R3</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4</id>
+<name>Магнетизм</name>
+<parent>VOZ11_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4_1</id>
+<name>МАГНИТНАЯ ПРОНИЦАЕМОСТЬ</name>
+<parent>VOZ11_FIZVEL_R4</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4_2</id>
+<name>МАГНИТНАЯ ВОСПРИИМЧИВОСТЬ</name>
+<parent>VOZ11_FIZVEL_R4</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4_3</id>
+<name>ДИПОЛЬНЫЙ МАГНИТ.МОМЕНТ(А*М^2)</name>
+<parent>VOZ11_FIZVEL_R4</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4_4</id>
+<name>НАМАГНИЧЕННОСТЬ (А/М)</name>
+<parent>VOZ11_FIZVEL_R4</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4_5</id>
+<name>ИНДУКТИВНОСТЬ(ВЗАИМ.ИНДУК)(ГН)</name>
+<parent>VOZ11_FIZVEL_R4</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4_6</id>
+<name>УД.МАГН.ВОСПРИИМЧИВОСТЬ М^3/КГ</name>
+<parent>VOZ11_FIZVEL_R4</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R4_7</id>
+<name>ТЕМ.К-Т УД.МАГН.ВОСПР.КГ/М^3*К</name>
+<parent>VOZ11_FIZVEL_R4</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5</id>
+<name>Оптика</name>
+<parent>VOZ11_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_1</id>
+<name>ПОКАЗАТЕЛЬ ПРЕЛОМЛЕНИЯ</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_10</id>
+<name>КРАСНАЯ ГРАНИЦА ФОТОЭФФЕКТА Гц</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_11</id>
+<name>КРАЙ СОБСТВ.ПОГЛОЩЕНИЯ (С^-1)</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_12</id>
+<name>СКОР.РЕКОМБИНАЦИИ (М^-3*С-1)</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_13</id>
+<name>ПОПЕР.СЕЧ.ПОГЛОЩ.Г-КВАНТОВ М^2</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_2</id>
+<name>РАЗ-ТЬ ПОКАЗАТЕЛЕЙ ПРЕЛОМЛЕНИЯ</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_3</id>
+<name>КОЭФФИЦИЕНТ ПОГЛОЩЕНИЯ</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_4</id>
+<name>ЛИН.ПОКАЗАТ.ПОГЛОЩЕНИЯ(М^-1)</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_5</id>
+<name>КОЭФФИЦИЕНТ ОТРАЖЕНИЯ</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_6</id>
+<name>КОЭФФИЦИЕНТ ПРОПУСКАНИЯ</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_7</id>
+<name>КОЭФФИЦИЕНТ РАССЕЯНИЯ</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_8</id>
+<name>ИСПУСКАТЕЛЬН.СПОСОБН.(ВТ/М^3)</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ11_FIZVEL_R5_9</id>
+<name>ПОСТОЯННАЯ ВРАЩЕНИЯ(ГРАДУС/М)</name>
+<parent>VOZ11_FIZVEL_R5</parent>
+</Thes>
+<Thes>
+<id>VOZ12</id>
+<name>Электронные плазменные волны</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ12_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ12</parent>
+</Thes>
+<Thes>
+<id>VOZ12_FIZVEL_1</id>
+<name>КРУГОВАЯ (ЦИКЛ.) ЧАСТОТА(С^-1)</name>
+<parent>VOZ12_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ12_FIZVEL_2</id>
+<name>ГРУППОВАЯ СКОРОСТЬ (М/С)</name>
+<parent>VOZ12_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ12_FIZVEL_3</id>
+<name>ВОЛНОВОЕ ЧИСЛО (М^-1)</name>
+<parent>VOZ12_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ12_FIZVEL_4</id>
+<name>ДЛИНА ВОЛНЫ (М)</name>
+<parent>VOZ12_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ12_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ12</parent>
+</Thes>
+<Thes>
+<id>VOZ12_PROS1</id>
+<name>ПЛОСКИЕ</name>
+<parent>VOZ12_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ12_PROS2</id>
+<name>ПРОДОЛЬНЫЕ</name>
+<parent>VOZ12_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ12_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ12</parent>
+</Thes>
+<Thes>
+<id>VOZ12_SPEC1</id>
+<name>МОНОХРОМАТИЧ.</name>
+<parent>VOZ12_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ13</id>
+<name>Плазменные ионно-звуковые волны</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ13_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ13</parent>
+</Thes>
+<Thes>
+<id>VOZ13_FIZVEL_1</id>
+<name>КРУГОВАЯ (ЦИКЛ.) ЧАСТОТА(С^-1)</name>
+<parent>VOZ13_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ13_FIZVEL_2</id>
+<name>ГРУППОВАЯ СКОРОСТЬ (М/С)</name>
+<parent>VOZ13_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ13_FIZVEL_3</id>
+<name>ВОЛНОВОЕ ЧИСЛО (М^-1)</name>
+<parent>VOZ13_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ13_FIZVEL_4</id>
+<name>ДЛИНА ВОЛНЫ (М)</name>
+<parent>VOZ13_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ13_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ13</parent>
+</Thes>
+<Thes>
+<id>VOZ13_PROS1</id>
+<name>ПЛОСКИЕ</name>
+<parent>VOZ13_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ13_PROS2</id>
+<name>ПРОДОЛЬНЫЕ</name>
+<parent>VOZ13_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ13_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ13</parent>
+</Thes>
+<Thes>
+<id>VOZ13_SPEC1</id>
+<name>МОНОХРОМАТИЧ.</name>
+<parent>VOZ13_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ2</id>
+<name>Магнитное поле</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ2_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ2</parent>
+</Thes>
+<Thes>
+<id>VOZ2_FIZVEL_1</id>
+<name>МАГНИТНАЯ ИНДУКЦИЯ (Тл)</name>
+<parent>VOZ2_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ2_FIZVEL_2</id>
+<name>НАПРЯЖЕННОСТЬ МАГН.ПОЛЯ (А/М)</name>
+<parent>VOZ2_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ2_FIZVEL_3</id>
+<name>ПОТОК МАГНИТНОЙ ИНДУКЦИИ (Вб)</name>
+<parent>VOZ2_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ2_FIZVEL_4</id>
+<name>ГРАД.НАПРЯЖЕН.МАГН.ПОЛЯ(A/М^2)</name>
+<parent>VOZ2_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ2_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ2</parent>
+</Thes>
+<Thes>
+<id>VOZ2_PROS1</id>
+<name>ОДНОРОДНОЕ</name>
+<parent>VOZ2_PROS4</parent>
+</Thes>
+<Thes>
+<id>VOZ2_PROS2</id>
+<name>НЕОДНОРОДНОЕ</name>
+<parent>VOZ2_PROS4</parent>
+</Thes>
+<Thes>
+<id>VOZ2_PROS3</id>
+<name>ПРОДОЛЬНОЕ</name>
+<parent>VOZ2_PROS5</parent>
+</Thes>
+<Thes>
+<id>VOZ2_PROS4</id>
+<name>ОДНОРОДНОСТЬ</name>
+<parent>VOZ2_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ2_PROS5</id>
+<name>ГЕОМЕТРИЯ</name>
+<parent>VOZ2_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ2_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ2</parent>
+</Thes>
+<Thes>
+<id>VOZ2_SPEC1</id>
+<name>СИЛЬНОЕ</name>
+<parent>VOZ2_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ2_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ2</parent>
+</Thes>
+<Thes>
+<id>VOZ2_VREM1</id>
+<name>ПОСТОЯННОЕ</name>
+<parent>VOZ2_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ2_VREM2</id>
+<name>ПЕРЕМЕННОЕ</name>
+<parent>VOZ2_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ2_VREM3</id>
+<name>ВЫСОКОЧАСТОТНОЕ</name>
+<parent>VOZ2_VREM2</parent>
+</Thes>
+<Thes>
+<id>VOZ3</id>
+<name>Гравитационное поле</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ3_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ3</parent>
+</Thes>
+<Thes>
+<id>VOZ3_FIZVEL_1</id>
+<name>НАПРЯЖЕННОСТЬ ГРАВ.ПОЛЯ (Н/Кг)</name>
+<parent>VOZ3_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ3_FIZVEL_2</id>
+<name>РАЗН.ПОТЕНЦ.ГРАВ.ПОЛЯ (Дж/Кг)</name>
+<parent>VOZ3_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ3_FIZVEL_3</id>
+<name>ГРАД.ПОТЕНЦ.ГР.ПОЛЯ(Дж/(Кг*М))</name>
+<parent>VOZ3_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ3_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ3</parent>
+</Thes>
+<Thes>
+<id>VOZ3_PROS1</id>
+<name>ОДНОРОДНОЕ</name>
+<parent>VOZ3_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ3_PROS2</id>
+<name>НЕОДНОРОДНОЕ</name>
+<parent>VOZ3_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ3_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ3</parent>
+</Thes>
+<Thes>
+<id>VOZ3_VREM1</id>
+<name>ПОСТОЯННОЕ</name>
+<parent>VOZ3_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ3_VREM2</id>
+<name>ПЕРЕМЕННОЕ</name>
+<parent>VOZ3_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ4</id>
+<name>Силовое (механическое воздействие)</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ4</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL_1</id>
+<name>СИЛА (РАЗНОСТЬ СИЛ) (Н)</name>
+<parent>VOZ4_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL_2</id>
+<name>ДАВЛЕНИЕ (РАЗН.ДАВЛЕНИЙ) (Па)</name>
+<parent>VOZ4_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL_3</id>
+<name>НАПРЯЖЕНИЕ (МЕХАНИЧЕСКОЕ) (Па)</name>
+<parent>VOZ4_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL_4</id>
+<name>МОМЕНТ СИЛЫ (Н*M)</name>
+<parent>VOZ4_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL_5</id>
+<name>ГРАДИЕНТ ДАВЛЕНИЯ (Па/М)</name>
+<parent>VOZ4_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL_6</id>
+<name>МОЩНОСТЬ (Вт)</name>
+<parent>VOZ4_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ4_FIZVEL_7</id>
+<name>ЧАСТОТА ИМПУЛЬСОВ (С^-1)</name>
+<parent>VOZ4_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ4_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ4</parent>
+</Thes>
+<Thes>
+<id>VOZ4_PROS1</id>
+<name>ОДНОРОДНОЕ</name>
+<parent>VOZ4_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ4_PROS2</id>
+<name>НЕОДНОРОДНОЕ</name>
+<parent>VOZ4_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ4_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ4</parent>
+</Thes>
+<Thes>
+<id>VOZ4_VREM1</id>
+<name>ПОСТОЯННОЕ</name>
+<parent>VOZ4_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ4_VREM2</id>
+<name>ПЕРЕМЕННОЕ</name>
+<parent>VOZ4_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ4_VREM3</id>
+<name>ИМПУЛЬСНОЕ</name>
+<parent>VOZ4_VREM2</parent>
+</Thes>
+<Thes>
+<id>VOZ5</id>
+<name>Поток вещества</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ5_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ5</parent>
+</Thes>
+<Thes>
+<id>VOZ5_FIZVEL_1</id>
+<name>ОБЪЕМНЫЙ РАСХОД (M^3/C)</name>
+<parent>VOZ5_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ5_FIZVEL_2</id>
+<name>МАССОВЫЙ РАСХОД (Кг/С)</name>
+<parent>VOZ5_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ5_FIZVEL_3</id>
+<name>ПЛОТНОСТЬ ОБЪЕМН.РАСХОДА (М/С)</name>
+<parent>VOZ5_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ5_FIZVEL_4</id>
+<name>ПЛОТН.МАСС.РАСХОДА(Кг/(С*М^2))</name>
+<parent>VOZ5_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ5_FIZVEL_5</id>
+<name>ДАВЛЕНИЕ (Па)</name>
+<parent>VOZ5_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ5_FIZVEL_6</id>
+<name>СКОРОСТЬ ПОТОКА (М/С)</name>
+<parent>VOZ5_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ5_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ5</parent>
+</Thes>
+<Thes>
+<id>VOZ5_PROS1</id>
+<name>ОДНОРОДНЫЙ</name>
+<parent>VOZ5_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ5_PROS2</id>
+<name>НЕОДНОРОДНЫЙ</name>
+<parent>VOZ5_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ5_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ5</parent>
+</Thes>
+<Thes>
+<id>VOZ5_SPEC1</id>
+<name>ЖИДКОСТЬ</name>
+<parent>VOZ5_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ5_SPEC2</id>
+<name>ГАЗ</name>
+<parent>VOZ5_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ5_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ5</parent>
+</Thes>
+<Thes>
+<id>VOZ5_VREM1</id>
+<name>ПОСТОЯННЫЙ</name>
+<parent>VOZ5_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ5_VREM2</id>
+<name>ПЕРЕМЕННЫЙ</name>
+<parent>VOZ5_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ6</id>
+<name>Поток тепла</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ6_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ6</parent>
+</Thes>
+<Thes>
+<id>VOZ6_FIZVEL_1</id>
+<name>КОЛИЧЕСТВО ТЕПЛОТЫ (Дж)</name>
+<parent>VOZ6_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ6_FIZVEL_2</id>
+<name>ТЕПЛОВОЙ ПОТОК (Вт)</name>
+<parent>VOZ6_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ6_FIZVEL_3</id>
+<name>ПОВ.ПЛОТН.ТЕПЛ.ПОТОКА(Вт/М^2)</name>
+<parent>VOZ6_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ6_FIZVEL_4</id>
+<name>ОБЪЕМ.ПЛОТ.ТЕПЛ.ПОТОКА(Вт/М^2)</name>
+<parent>VOZ6_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ6_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ6</parent>
+</Thes>
+<Thes>
+<id>VOZ6_PROS1</id>
+<name>ОДНОРОДНЫЙ</name>
+<parent>VOZ6_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ6_PROS2</id>
+<name>НЕОДНОРОДНЫЙ</name>
+<parent>VOZ6_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ6_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ6</parent>
+</Thes>
+<Thes>
+<id>VOZ6_VREM1</id>
+<name>ПОСТОЯННЫЙ</name>
+<parent>VOZ6_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ6_VREM2</id>
+<name>ПЕРЕМЕННЫЙ</name>
+<parent>VOZ6_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ7</id>
+<name>Поток микрочастиц</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ7</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_1</id>
+<name>ПОТОК ЧАСТИЦ (C^-1)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_10</id>
+<name>ПЛОТН.ИНТЕГРАЛЬН.ПОТОКА(М^-2)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_11</id>
+<name>КОЭФФИЦИЕНТ РАСПЫЛЕНИЯ</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_12</id>
+<name>ЧАСТОТА ИМПУЛЬСОВ (С^-1)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_13</id>
+<name>ГЛУБИНА ПРОНИКНОВЕНИЯ ПУЧКА(М)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_2</id>
+<name>ПЛОТН.ПОТОКА ЧАСТИЦ(С^-1*М^-2)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_3</id>
+<name>СКОРОСТЬ ЧАСТИЦ (M/C)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_4</id>
+<name>ЭНЕРГИЯ ЧАСТИЦ (Дж)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_5</id>
+<name>СТЕПЕНЬ ИОНИЗАЦИИ</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_6</id>
+<name>СКОР.ОБРЗ.ПАР ИОНОВ(М^-3*С^-1)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_7</id>
+<name>МАССА (КГ)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_8</id>
+<name>УГОЛ ПАДЕНИЯ (Градус)</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_FIZVEL_9</id>
+<name>ИНТЕГРАЛЬНЫЙ ПОТОК ЧАСТИЦ</name>
+<parent>VOZ7_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ7_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ7</parent>
+</Thes>
+<Thes>
+<id>VOZ7_PROS1</id>
+<name>ОДНОРОДНЫЙ</name>
+<parent>VOZ7_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ7_PROS2</id>
+<name>НЕОДНОРОДНЫЙ</name>
+<parent>VOZ7_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ7</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC1</id>
+<name>МОЛЕКУЛЫ</name>
+<parent>VOZ7_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC2</id>
+<name>АТОМЫ</name>
+<parent>VOZ7_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC3</id>
+<name>ЭЛЕМ.ЧАСТИЦЫ</name>
+<parent>VOZ7_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC4</id>
+<name>ЭЛЕКТРОНЫ</name>
+<parent>VOZ7_SPEC3</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC5</id>
+<name>ИОНЫ</name>
+<parent>VOZ7_SPEC3</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC6</id>
+<name>ПРОТОНЫ</name>
+<parent>VOZ7_SPEC3</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC7</id>
+<name>НЕЙТРОНЫ</name>
+<parent>VOZ7_SPEC3</parent>
+</Thes>
+<Thes>
+<id>VOZ7_SPEC8</id>
+<name>МЕЗОНЫ</name>
+<parent>VOZ7_SPEC3</parent>
+</Thes>
+<Thes>
+<id>VOZ7_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ7</parent>
+</Thes>
+<Thes>
+<id>VOZ7_VREM1</id>
+<name>ПОСТОЯННЫЙ</name>
+<parent>VOZ7_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ7_VREM2</id>
+<name>ПЕРЕМЕННЫЙ</name>
+<parent>VOZ7_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ8</id>
+<name>Упругие (акустические) волны</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ8</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_1</id>
+<name>ЧАСТОТА КОЛЕБАНИЙ (Гц)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_10</id>
+<name>УГОЛ ПАДЕНИЯ (Градус)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_11</id>
+<name>УГОЛ ОТРАЖЕНИЯ (Градус)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_2</id>
+<name>КРУГОВАЯ (ЦИКЛ.) ЧАСТОТА(С^-1)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_3</id>
+<name>ДЛИНА ВОЛНЫ (M)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_4</id>
+<name>ФАЗОВАЯ СКОРОСТЬ (M/C)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_5</id>
+<name>АМПЛИТУДА КОЛЕБАНИЙ (M)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_6</id>
+<name>ИНТЕНСИВНОСТЬ ЗВУКА (Вт/М^2)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_7</id>
+<name>ПОТОК ЗВУКОВОЙ ЭНЕРГИИ (Вт)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_8</id>
+<name>УРОВЕНЬ ЗВУКОВОГО ДАВЛЕНИЯ(Дб)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_FIZVEL_9</id>
+<name>ДАВЛЕНИЕ ЗВУК. ИЗЛУЧЕНИЯ (Па)</name>
+<parent>VOZ8_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ8</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS1</id>
+<name>БЕГУЩИЕ</name>
+<parent>VOZ8_PROS14</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS10</id>
+<name>ГЕОМЕТРИЯ</name>
+<parent>VOZ8_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS11</id>
+<name>НАПРАВЛЕННОСТЬ</name>
+<parent>VOZ8_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS12</id>
+<name>ФОРМА</name>
+<parent>VOZ8_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS13</id>
+<name>ПОЛЯРИЗОВАННОСТЬ</name>
+<parent>VOZ8_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS14</id>
+<name>ДИНАМИКА</name>
+<parent>VOZ8_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS2</id>
+<name>ПРОДОЛЬНЫЕ</name>
+<parent>VOZ8_PROS11</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS3</id>
+<name>ПОПЕРЕЧНЫЕ</name>
+<parent>VOZ8_PROS11</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS4</id>
+<name>ПЛОСКИЕ</name>
+<parent>VOZ8_PROS12</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS5</id>
+<name>СФЕРИЧЕСКИЕ</name>
+<parent>VOZ8_PROS12</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS6</id>
+<name>ПЛОСК.ПОЛЯРИЗОВ</name>
+<parent>VOZ8_PROS13</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS7</id>
+<name>ЭЛЛИП.ПОЛЯРИЗОВ</name>
+<parent>VOZ8_PROS13</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS8</id>
+<name>СТОЯЧИЕ</name>
+<parent>VOZ8_PROS14</parent>
+</Thes>
+<Thes>
+<id>VOZ8_PROS9</id>
+<name>ПОВЕРХНОСТНЫЕ</name>
+<parent>VOZ8_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ8</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC1</id>
+<name>ЗВУК</name>
+<parent>VOZ8_SPEC7</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC2</id>
+<name>УЛЬТРАЗВУК</name>
+<parent>VOZ8_SPEC7</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC3</id>
+<name>ИНФРАЗВУК</name>
+<parent>VOZ8_SPEC7</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC4</id>
+<name>ГИПЕРЗВУК</name>
+<parent>VOZ8_SPEC7</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC5</id>
+<name>МОНОХРОМАТИЧ.</name>
+<parent>VOZ8_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC6</id>
+<name>СПЕКТР</name>
+<parent>VOZ8_SPEC7</parent>
+</Thes>
+<Thes>
+<id>VOZ8_SPEC7</id>
+<name>ЧАСТОТА</name>
+<parent>VOZ8_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ8_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ8</parent>
+</Thes>
+<Thes>
+<id>VOZ8_VREM1</id>
+<name>ГАРМОНИЧ.(Sin)</name>
+<parent>VOZ8_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ8_VREM2</id>
+<name>НЕСИНУСОИДАЛЬН.</name>
+<parent>VOZ8_VREM</parent>
+</Thes>
+<Thes>
+<id>VOZ9</id>
+<name>Электромагнитное излучение</name>
+<parent>ALLACTIONS</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL</id>
+<name>Физическая величина</name>
+<parent>VOZ9</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_1</id>
+<name>ЧАСТОТА КОЛЕБАНИЙ (Гц)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_10</id>
+<name>УГОЛ ОТРАЖЕНИЯ (Градус)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_11</id>
+<name>УГОЛ ПРЕЛОМЛЕНИЯ (Градус)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_12</id>
+<name>УГОЛ РАССЕИВАНИЯ (Градус)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_13</id>
+<name>УГОЛ СКОЛЬЖЕНИЯ (Градус)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_14</id>
+<name>УГОЛ РАСХОЖДЕНИЯ (Градус)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_15</id>
+<name>УГОЛ ПОВОРОТА ПЛ-ТИ ПОЛЯРИЗАЦ.</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_16</id>
+<name>СПЕКТР.ПЛОТНОСТЬ ПОТОКА (Вт/М)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_17</id>
+<name>ВОЛНОВОЕ ЧИСЛО (М^-1)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_18</id>
+<name>ФАЗА КОЛЕБАНИЙ (рад)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_19</id>
+<name>СТЕПЕНЬ ПОЛЯРИЗАЦИИ</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_2</id>
+<name>КРУГОВАЯ (ЦИКЛ.) ЧАСТОТА(С^-1)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_20</id>
+<name>ОСВЕЩЕННОСТЬ (Лк)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_21</id>
+<name>СПЕКТР.ПЛОТН.ЭН.ОСВЕЩ.(Дж/М^2)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_22</id>
+<name>СВЕТОВОЙ ПОТОК (Лм)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_23</id>
+<name>ЭНЕРГИЯ ФОТОНА (Дж)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_24</id>
+<name>ПЛОТ.ПОТОКА ФОТОНОВ(С^-1*М^-2)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_25</id>
+<name>НАПРЯЖЕННОСТЬ ЭЛ.ПОЛЯ (В/М)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_26</id>
+<name>СКОР-ТЬ СКАНИРОВАНИЯ ЛУЧА(М/С)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_27</id>
+<name>ЭНЕРГИЯ ИЗЛУЧЕНИЯ (Дж)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_28</id>
+<name>СИЛА СВЕТА (Кд)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_29</id>
+<name>ОБ.ПЛ-ТЬ ПОТОКА ИЗЛУЧ.(Вт/М^3)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_3</id>
+<name>ДЛИНА ВОЛНЫ (M)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_30</id>
+<name>СИЛА СВЕТА (Кд)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_31</id>
+<name>ПЛОТНОСТЬ ПОТОКА (Вт/М^3)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_32</id>
+<name>ДЛИТЕЛЬНОСТЬ ИМПУЛЬСА (С)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_33</id>
+<name>АМПЛИТУДА (М)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_4</id>
+<name>ФАЗОВАЯ СКОРОСТЬ (M/C)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_5</id>
+<name>ИНТЕН-СТЬ ИЗЛУЧЕНИЯ (Вт/М^2)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_6</id>
+<name>ОБЪЕМ.ПЛОТ-СТЬ ЭНЕРГИИ(Дж/М^3)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_7</id>
+<name>ПОТОК ИЗЛУЧЕНИЯ (Вт)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_8</id>
+<name>ЯРКОСТЬ (Кд/М^2)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_FIZVEL_9</id>
+<name>УГОЛ ПАДЕНИЯ (Градус)</name>
+<parent>VOZ9_FIZVEL</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS</id>
+<name>Пространственные характеристики</name>
+<parent>VOZ9</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS1</id>
+<name>ПЛОСКИЕ ВОЛНЫ</name>
+<parent>VOZ9_PROS9</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS10</id>
+<name>ПОЛЯРИЗОВАННОСТЬ</name>
+<parent>VOZ9_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS2</id>
+<name>СФЕРИЧЕСК.ВОЛНЫ</name>
+<parent>VOZ9_PROS9</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS3</id>
+<name>ЛИНЕЙНО ПОЛЯРИЗ</name>
+<parent>VOZ9_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS4</id>
+<name>ЭЛЛИПТ.ПОЛЯРИЗ.</name>
+<parent>VOZ9_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS5</id>
+<name>ЦИРКУЛ.ПОЛЯРИЗ.</name>
+<parent>VOZ9_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS6</id>
+<name>ЧАСТИЧН.ПОЛЯРИЗ</name>
+<parent>VOZ9_PROS10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS7</id>
+<name>ЕСТЕСТВЕН.СВЕТ</name>
+<parent>VOZ9_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS8</id>
+<name>СФОКУСИРОВАННОЕ</name>
+<parent>VOZ9_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ9_PROS9</id>
+<name>ГЕОМЕТРИЯ</name>
+<parent>VOZ9_PROS</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC</id>
+<name>Специальные характеристики</name>
+<parent>VOZ9</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC1</id>
+<name>ВИДИМОЕ (СВЕТ)</name>
+<parent>VOZ9_SPEC10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC10</id>
+<name>ЧАСТОТА</name>
+<parent>VOZ8_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC2</id>
+<name>УЛЬТРАФИОЛЕТОВ.</name>
+<parent>VOZ9_SPEC10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC3</id>
+<name>ИНФРАКРАСНОЕ</name>
+<parent>VOZ9_SPEC10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC4</id>
+<name>РЕНТГЕНОВСКОЕ</name>
+<parent>VOZ9_SPEC10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC5</id>
+<name>ГАММА-ИЗЛУЧЕНИЕ</name>
+<parent>VOZ9_SPEC10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC6</id>
+<name>РАДИОВОЛНЫ</name>
+<parent>VOZ9_SPEC10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC7</id>
+<name>ЛАЗЕРНОЕ</name>
+<parent>VOZ9_SPEC8</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC8</id>
+<name>МОНОХРОМАТИЧ.</name>
+<parent>VOZ9_SPEC</parent>
+</Thes>
+<Thes>
+<id>VOZ9_SPEC9</id>
+<name>СПЕКТР</name>
+<parent>VOZ9_SPEC10</parent>
+</Thes>
+<Thes>
+<id>VOZ9_VREM</id>
+<name>Временные характеристики</name>
+<parent>VOZ9</parent>
+</Thes>
+<Thes>
+<id>VOZ9_VREM1</id>
+<name>ИМПУЛЬСНОЕ</name>
+<parent>VOZ9_VREM</parent>
+</Thes>
+<Thes>
+<id>X</id>
+<name>Химический состав</name>
+<parent>DESCOBJECT</parent>
+</Thes>
+<Thes>
+<id>X1</id>
+<name>ОДНОКОМПОНЕНТНЫЙ</name>
+<parent>X</parent>
+</Thes>
+<Thes>
+<id>X2</id>
+<name>МНОГОКОМПОНЕНТНЫЙ</name>
+<parent>X</parent>
+</Thes>
+<Thes>
+<id>X3</id>
+<name>С ПРИМЕСЬЮ/ЛЕГ.ДОБ</name>
+<parent>X</parent>
+</Thes>
+</dataroot>
