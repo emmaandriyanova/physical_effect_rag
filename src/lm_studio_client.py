@@ -48,17 +48,15 @@ class LMStudioClient:
             system_prompt: str,
             user_prompt: str,
             temperature: float = 0.0,
-            max_tokens: int = 1000
+            max_tokens: int = 2000
     ) -> str:
+        prefix = f"{system_prompt}\n\n" if system_prompt and system_prompt.strip() else ""
         payload = {
             "model": self.model_id,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt + "\n\n/no_think"}
-            ],
+            "prompt": f"{prefix}### Текст:\n{user_prompt}\n\n### JSON:\n<think>\n\n</think>\n",
             "temperature": temperature,
             "max_tokens": max_tokens,
-            "enable_thinking": False
+            "stop": ["###", "\n\n\n"],
         }
 
         logging.info("отправка запроса в лм студио")
@@ -72,10 +70,11 @@ class LMStudioClient:
         response.raise_for_status()
         data = response.json()
 
-        content = data["choices"][0]["message"]["content"]
+        content = data["choices"][0]["text"]
+        logging.info(f"RAW ответ модели ПОЛНЫЙ: '{content}'")
         return self.clean_response_text(content)
 
-    def chat_optional(self, system_prompt, user_prompt, temperature=0.0, max_tokens=800):
+    def chat_optional(self, system_prompt, user_prompt, temperature=0.0, max_tokens=2000):
         for attempt in range(3):
             try:
                 return self.chat(

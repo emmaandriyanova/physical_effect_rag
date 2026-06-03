@@ -1,0 +1,4335 @@
+===== ./src/fetext_formatter.py =====
+```python
+import re
+from typing import Optional
+
+from thesaurus_match import ThesaurusMatcher
+
+
+class FETextFormatter:
+
+    def __init__(self, matcher: ThesaurusMatcher):
+        self.matcher = matcher
+        self.df = matcher.df.fillna("")
+
+    @staticmethod
+    def _clean(text: str) -> str:
+        text = str(text or "").strip()
+        text = re.sub(r"\s+", " ", text)
+        return text
+
+    @staticmethod
+    def _cap(text: str) -> str:
+        text = str(text or "").strip()
+        if not text:
+            return ""
+        if text.isupper():
+            text = text.lower()
+        return text[0].upper() + text[1:]
+
+    @staticmethod
+    def _split_fetext_items(text: str) -> list[str]:
+        text = str(text or "").strip()
+        if not text:
+            return []
+
+        if "Вход1:" in text or "Вход2:" in text or "Вход3:" in text:
+            parts = re.split(r"(?:^|\s)(Вход\d+:)", text)
+            items = []
+            current = ""
+
+            for part in parts:
+                part = part.strip()
+                if not part:
+                    continue
+
+                if re.match(r"Вход\d+:", part):
+                    if current:
+                        items.append(current.strip())
+                    current = part
+                else:
+                    current = f"{current} {part}".strip()
+
+            if current:
+                items.append(current.strip())
+
+            cleaned = []
+            for item in items:
+                item = re.sub(r"^Вход\d+:\s*", "", item).strip()
+                if item:
+                    cleaned.append(item)
+            return cleaned
+
+        return [text]
+
+    @staticmethod
+    def _normalize_formatting(text: str) -> str:
+        text = str(text or "").strip()
+        if not text:
+            return text
+        text = re.sub(r'(\w)\(', r'\1 (', text)
+        text = re.sub(r'\.\s+([а-яёa-zA-Z])', lambda m: '. ' + m.group(1).upper(), text)
+        return text
+
+    @staticmethod
+    def _looks_abbreviated(text: str) -> bool:
+        t = str(text or "").strip()
+        if not t:
+            return True
+
+        bad_patterns = [
+            r"\bмагн\.",
+            r"\bдеформиров\.",
+            r"\bразн\.",
+            r"\bпотенц\.",
+            r"\bэлектр\.",
+            r"\bграв\.",
+            r"\bсуммари",
+        ]
+        return any(re.search(p, t.lower()) for p in bad_patterns)
+
+    def _find_exact_node(self, term: str) -> Optional[dict]:
+        result = self.matcher.find_best(term, top_k=5)
+        exact = result.get("exact_match")
+        if exact:
+            return exact
+
+        similar = result.get("similar", [])
+        picked = self.matcher._pick_semantic_candidate(similar)
+        return picked
+
+    def _find_branch_children(self, node_name: str, branch_hint: str) -> list[str]:
+        node = self._find_exact_node(node_name)
+        if not node:
+            return []
+
+        node_id = str(node.get("node_id", "")).strip()
+        if not node_id:
+            return []
+
+        branch_rows = self.df[
+            (self.df["parent"] == node_id) &
+            (self.df["name"].str.lower() == branch_hint.lower())
+        ]
+
+        if branch_rows.empty:
+            return []
+
+        branch_id = str(branch_rows.iloc[0]["node_id"])
+        child_rows = self.df[self.df["parent"] == branch_id]
+
+        names = [self._cap(str(x).strip()) for x in child_rows["name"].tolist() if str(x).strip()]
+        return names
+
+    def _choose_modifiers_from_text(self, text: str, term_name: str) -> list[str]:
+
+        text_low = self._clean(text).lower()
+        result = []
+
+        for branch in ["Временные характеристики", "Пространственные характеристики"]:
+            candidates = self._find_branch_children(term_name, branch)
+            for cand in candidates:
+                cand_low = cand.lower()
+
+                if cand_low in text_low:
+                    result.append(self._cap(cand))
+
+                if "переменн" in text_low and "переменн" in cand_low:
+                    result.append(self._cap(cand))
+                if "постоянн" in text_low and "постоянн" in cand_low:
+                    result.append(self._cap(cand))
+                if "низкочастот" in text_low and "низкочастот" in cand_low:
+                    result.append(self._cap(cand))
+                if "высокочастот" in text_low and "высокочастот" in cand_low:
+                    result.append(self._cap(cand))
+                if "однородн" in text_low and "однородн" in cand_low:
+                    result.append(self._cap(cand))
+                if "неоднородн" in text_low and "неоднородн" in cand_low:
+                    result.append(self._cap(cand))
+                if "импульс" in text_low and "импульс" in cand_low:
+                    result.append(self._cap(cand))
+
+        uniq = []
+        seen = set()
+        for x in result:
+            k = x.lower()
+            if k not in seen:
+                uniq.append(x)
+                seen.add(k)
+
+        return uniq
+
+    def _canonical_term(self, text: str, role: str) -> str:
+        clean_text = self._cap(text)
+
+        if role == "input":
+            return clean_text
+
+        result = self.matcher.find_best(text, top_k=5, role=role)
+        exact = result.get("exact_match")
+        similar = result.get("similar", [])
+        picked = exact or self.matcher._pick_semantic_candidate(similar, role=role)
+
+        if not picked:
+            return clean_text
+
+        thes_name = self._cap(picked.get("name", ""))
+
+        if self._looks_abbreviated(thes_name):
+            return clean_text
+
+        if len(clean_text) >= len(thes_name):
+            return clean_text
+
+        return thes_name
+
+    def format_input_field(self, input_text: str) -> str:
+
+        term = self._canonical_term(input_text, role="input")
+        modifiers = self._choose_modifiers_from_text(input_text, term)
+
+        parts = [term]
+        parts.extend(modifiers)
+
+        uniq = []
+        seen = set()
+        for p in parts:
+            k = p.lower()
+            if k not in seen:
+                uniq.append(p)
+                seen.add(k)
+
+        return self._normalize_formatting(". ".join([p for p in uniq if p]).strip())
+
+    def format_output_field(self, output_text: str) -> str:
+        return self._normalize_formatting(self._canonical_term(output_text, role="output"))
+
+    def format_object_field(self, object_text: str) -> str:
+        return self._normalize_formatting(self._canonical_term(object_text, role="object"))
+
+    def format_input_params(self, input_params: str) -> str:
+        items = self._split_fetext_items(input_params)
+
+        if not items:
+            return ""
+
+        if len(items) == 1:
+            return self.format_input_field(items[0]).strip()
+
+        formatted = []
+        for idx, item in enumerate(items, start=1):
+            formatted.append(f"Вход{idx}:{self.format_input_field(item)}")
+        return " ".join(formatted).strip()
+
+    def format_output_params(self, output_params: str) -> str:
+        items = self._split_fetext_items(output_params)
+
+        formatted = []
+        for item in items:
+            item = self._clean(item)
+            if not item:
+                continue
+            formatted.append(self.format_output_field(item))
+
+        uniq = []
+        seen = set()
+        for x in formatted:
+            k = x.lower()
+            if k not in seen:
+                uniq.append(x)
+                seen.add(k)
+
+        return ". ".join(uniq).strip()
+
+    def format_fields(self, input_params: str, object_text: str, output_params: str) -> dict:
+        return {
+            "input_params": self.format_input_params(input_params),
+            "object": self.format_object_field(object_text),
+            "output_params": self.format_output_params(output_params)
+        }
+```
+
+===== ./src/thesaurus_match.py =====
+```python
+from pathlib import Path
+import logging
+import hashlib
+import html
+import re
+
+import lancedb
+import pandas as pd
+from sentence_transformers import SentenceTransformer
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+def clean_text(text: str) -> str:
+    if not text:
+        return ""
+
+    text = html.unescape(str(text))
+    text = text.replace("\xa0", " ")
+    text = text.replace("\n", " ")
+    text = text.replace("\r", " ")
+    text = text.replace("\t", " ")
+    text = text.replace("–", "-").replace("—", "-").replace("−", "-")
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
+
+
+def canonicalize_text(text: str) -> str:
+    text = clean_text(text).lower()
+    text = re.sub(r"\s*([,.;:!?()])\s*", r"\1", text)
+    text = re.sub(r"-{2,}", "-", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def text_hash(text: str) -> str:
+    return hashlib.md5(text.encode("utf-8")).hexdigest()
+
+
+class ThesaurusMatcher:
+    def __init__(
+        self,
+        db_path: str = "./lancedb_data",
+        table_name: str = "thesaurus",
+        embedding_model: str = "intfloat/multilingual-e5-small"
+    ):
+        project_root = Path(__file__).parent.parent
+        self.db_path = project_root / db_path
+
+        self.db = lancedb.connect(str(self.db_path))
+        self.table = self.db.open_table(table_name)
+
+        logging.info("Загружаем эмбеддинговую модель для тезауруса...")
+        self.embedder = SentenceTransformer(embedding_model)
+        logging.info("эмбеддинговая модель загружена")
+
+        self.df = self.table.to_pandas().fillna("")
+        logging.info(f"загружено {len(self.df)} записей тезауруса")
+
+    @staticmethod
+    def _path_parts(item: dict) -> list[str]:
+        full_path = str(item.get("full_path", ""))
+        return [p.strip() for p in full_path.split(">") if p.strip()]
+
+    @staticmethod
+    def _path_parts_lower(item: dict) -> list[str]:
+        return [p.lower() for p in ThesaurusMatcher._path_parts(item)]
+
+    @staticmethod
+    def _is_input_branch(item: dict) -> bool:
+        parts = ThesaurusMatcher._path_parts_lower(item)
+        return any("воздейств" in p for p in parts)
+
+    @staticmethod
+    def _is_output_like_branch(item: dict) -> bool:
+        parts = ThesaurusMatcher._path_parts_lower(item)
+        keywords = [
+            "состояние",
+            "деформ",
+            "давление",
+            "ток",
+            "намагнич",
+            "поляризац",
+            "скорость",
+            "ускорение",
+            "температур",
+            "нагрев",
+            "смещение",
+        ]
+        return any(any(k in p for k in keywords) for p in parts)
+
+    @staticmethod
+    def _is_object_like_branch(item: dict) -> bool:
+        parts = ThesaurusMatcher._path_parts_lower(item)
+        keywords = [
+            "объект",
+            "веществ",
+            "материал",
+            "сред",
+            "тело",
+            "металл",
+            "газ",
+            "жидк",
+            "кристалл",
+        ]
+        return any(any(k in p for k in keywords) for p in parts)
+
+    @staticmethod
+    def _lift_input_term(item: dict) -> dict:
+        if not item:
+            return item
+
+        path_parts = ThesaurusMatcher._path_parts(item)
+        lower_parts = [p.lower() for p in path_parts]
+
+        if not path_parts:
+            return item
+
+        for i, part in enumerate(lower_parts):
+            if "физическая величина" in part and i > 0:
+                lifted_name = path_parts[i - 1]
+                lifted_path = " > ".join(path_parts[:i])
+                new_item = dict(item)
+                new_item["name"] = lifted_name
+                new_item["canonical_name"] = canonicalize_text(lifted_name)
+                new_item["full_path"] = lifted_path
+                new_item["path"] = lifted_path
+                new_item["lifted"] = True
+                return new_item
+
+        if len(path_parts) >= 4:
+            for i, part in enumerate(lower_parts):
+                if "воздейств" in part and i + 1 < len(path_parts):
+                    lifted_name = path_parts[i + 1]
+                    lifted_path = " > ".join(path_parts[:i + 2])
+                    new_item = dict(item)
+                    new_item["name"] = lifted_name
+                    new_item["canonical_name"] = canonicalize_text(lifted_name)
+                    new_item["full_path"] = lifted_path
+                    new_item["path"] = lifted_path
+                    new_item["lifted"] = True
+                    return new_item
+
+        return item
+
+    def _filter_by_role(self, items: list[dict], role: str) -> list[dict]:
+        filtered = []
+
+        for item in items:
+
+            if role == "input":
+                if self._is_input_branch(item):
+                    lifted = self._lift_input_term(item)
+                    filtered.append(lifted)
+
+            elif role == "object":
+                if not self._is_input_branch(item) and self._is_object_like_branch(item):
+                    filtered.append(item)
+
+            elif role == "output":
+                if not self._is_input_branch(item) and self._is_output_like_branch(item):
+                    filtered.append(item)
+
+        return filtered
+
+    def find_exact(self, term: str) -> dict | None:
+        canonical_term = canonicalize_text(term)
+        term_hash = text_hash(canonical_term) if canonical_term else ""
+
+        hash_matches = self.df[self.df["name_hash"] == term_hash]
+        if not hash_matches.empty:
+            row = hash_matches.iloc[0]
+            return self._row_to_result(row, score=1.0, match_type="hash")
+
+        canonical_matches = self.df[self.df["canonical_name"] == canonical_term]
+        if not canonical_matches.empty:
+            row = canonical_matches.iloc[0]
+            return self._row_to_result(row, score=1.0, match_type="canonical")
+
+        exact_name_matches = self.df[self.df["name"] == clean_text(term)]
+        if not exact_name_matches.empty:
+            row = exact_name_matches.iloc[0]
+            return self._row_to_result(row, score=1.0, match_type="name")
+
+        return None
+
+    def find_similar(self, term: str, top_k: int = 5) -> list[dict]:
+        query = clean_text(term)
+        if not query:
+            return []
+
+        query_vector = self.embedder.encode(
+            f"query: {query}",
+            normalize_embeddings=True
+        ).tolist()
+
+        results = (
+            self.table.search(query_vector)
+            .limit(top_k)
+            .to_list()
+        )
+
+        return [
+            {
+                "node_id": row.get("node_id", ""),
+                "name": row.get("name", ""),
+                "canonical_name": row.get("canonical_name", ""),
+                "full_path": row.get("full_path", ""),
+                "path": row.get("path", ""),
+                "path_depth": row.get("path_depth", 0),
+                "top_level": row.get("top_level", ""),
+                "parent": row.get("parent", ""),
+                "_distance": row.get("_distance", None),
+                "match_type": "semantic"
+            }
+            for row in results
+        ]
+
+    @staticmethod
+    def _pick_semantic_candidate(similar: list[dict], role: str | None = None) -> dict | None:
+        if not similar:
+            return None
+
+        threshold_by_role = {
+            "input": 0.80,
+            "object": 0.86,
+            "output": 0.82,
+            None: 0.84
+        }
+
+        min_score = threshold_by_role.get(role, 0.84)
+
+        best = None
+        best_score = -1.0
+
+        for item in similar:
+            distance = item.get("_distance", None)
+            if distance is None:
+                continue
+
+            score = 1.0 - float(distance)
+            if score > best_score:
+                best_score = score
+                best = dict(item)
+                best["_semantic_score"] = score
+
+        if best and best_score >= min_score:
+            return best
+
+        return None
+
+    def find_best(self, term: str, top_k: int = 5, role: str | None = None) -> dict:
+        exact = self.find_exact(term)
+
+        if exact:
+            if role == "input":
+                exact = self._lift_input_term(exact)
+
+            return {
+                "query": term,
+                "exact_match": exact,
+                "similar": []
+            }
+
+        similar = self.find_similar(term, top_k=top_k)
+
+        if role:
+            similar = self._filter_by_role(similar, role=role)
+
+        return {
+            "query": term,
+            "exact_match": None,
+            "similar": similar
+        }
+
+    @staticmethod
+    def _row_to_result(row, score: float, match_type: str) -> dict:
+        return {
+            "node_id": row["node_id"],
+            "name": row["name"],
+            "canonical_name": row["canonical_name"],
+            "full_path": row["full_path"],
+            "path": row["path"],
+            "path_depth": row["path_depth"],
+            "top_level": row["top_level"],
+            "parent": row["parent"],
+            "score": score,
+            "match_type": match_type
+        }
+
+
+if __name__ == "__main__":
+    matcher = ThesaurusMatcher()
+
+    test_term = "нагружение"
+    result = matcher.find_best(test_term, top_k=10)
+
+    print("\nрезультат:")
+    print(result)
+```
+
+===== ./src/config.py =====
+```python
+from pathlib import Path
+
+LM_STUDIO_URL = "http://79.170.162.18:1234/v1/completions"
+LM_STUDIO_MODEL_ID = "qwen3-8b"
+
+EMBEDDING_MODEL = "intfloat/multilingual-e5-small"
+KEYT5_MODEL_PATH = "/Users/emma/Desktop/диплом/для нейронки/keyt5-finetuned"
+
+LANCEDB_PATH = "./lancedb_data"
+LANCEDB_TABLE = "physical_effects"
+
+EVAL_GROUND_TRUTH_PATH = Path("/Users/emma/PycharmProjects/PythonProject8/data/ground_truth_40.csv")
+EVAL_RAG_RESULTS_PATH = Path("/Users/emma/PycharmProjects/PythonProject8/data/results_rag.csv")
+EVAL_NO_RAG_RESULTS_PATH = Path("/Users/emma/PycharmProjects/PythonProject8/data/results_no_rag.csv")
+EVAL_COMPARISON_DETAILS_OUT = Path("/Users/emma/PycharmProjects/PythonProject8/data/comparison_ranked.csv")
+EVAL_COMPARISON_SUMMARY_OUT = Path("/Users/emma/PycharmProjects/PythonProject8/data/comparison_summary.csv")
+```
+
+===== ./src/create_embeddings.py =====
+```python
+import json
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from pathlib import Path
+import logging
+import pickle
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+class EmbeddingGenerator:
+
+    def __init__(self, model_name: str = "intfloat/multilingual-e5-small"):
+        logging.info(f"загружаем модель эмбеддингов: {model_name}")
+        self.model = SentenceTransformer(model_name)
+        self.model_name = model_name
+        logging.info("модель загружена")
+
+    def generate_passage_embeddings(self, texts, batch_size=64):
+        prepared = [f"passage: {text}" for text in texts]
+        embeddings = self.model.encode(
+            prepared,
+            batch_size=batch_size,
+            show_progress_bar=True,
+            normalize_embeddings=True,
+            convert_to_numpy=True
+        )
+        return embeddings
+
+    def save_embeddings(self, embeddings, chunks, output_dir):
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        emb_path = output_dir / "embeddings.npy"
+        np.save(emb_path, embeddings)
+
+        chunks_path = output_dir / "chunks_with_emb.pkl"
+        with open(chunks_path, "wb") as f:
+            pickle.dump(chunks, f)
+
+        metadata_path = output_dir / "metadata.json"
+        metadata = {
+            "embedding_model": self.model_name,
+            "num_chunks": len(chunks),
+            "embedding_dim": int(embeddings.shape[1]) if len(embeddings.shape) > 1 else 0
+        }
+        with open(metadata_path, "w", encoding="utf-8") as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
+
+        logging.info(f"эмбеддинги сохранены в {emb_path}")
+        logging.info(f"чанки сохранены в {chunks_path}")
+        logging.info(f"метаданные сохранены в {metadata_path}")
+
+        return emb_path, chunks_path, metadata_path
+
+
+def main():
+    chunks_path = Path(__file__).parent.parent / "data" / "chunks.json"
+
+    with open(chunks_path, "r", encoding="utf-8") as f:
+        chunks = json.load(f)
+
+    texts = [chunk["text"] for chunk in chunks]
+    logging.info(f"загружено {len(chunks)} чанков")
+
+    generator = EmbeddingGenerator()
+    embeddings = generator.generate_passage_embeddings(texts)
+
+    logging.info(f"форма эмбеддингов: {embeddings.shape}")
+
+    cache_dir = Path(__file__).parent.parent / "embeddings_cache"
+    generator.save_embeddings(embeddings, chunks, cache_dir)
+
+    print(f"\nсоздано {len(embeddings)} эмбеддингов размерностью {embeddings.shape[1]}")
+
+
+if __name__ == "__main__":
+    main()```
+
+===== ./src/evaluate_rag.py =====
+```python
+import csv
+from pathlib import Path
+
+from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
+from run_pipeline import RAGPipeline
+
+
+def read_texts(file_path: Path) -> list[str]:
+    text = file_path.read_text(encoding="utf-8").strip()
+
+    parts = [part.strip() for part in text.split("\n\n") if part.strip()]
+    return parts
+
+
+def main():
+    project_root = Path(__file__).parent.parent
+
+    input_path = project_root / "data" / "patents_40_texts.txt"
+    output_path = project_root / "data" / "results_rag.csv"
+
+    texts = read_texts(input_path)
+
+    print(f"найдено текстов: {len(texts)}")
+    print("загрузка системы...")
+
+    pipeline = RAGPipeline(
+        lm_studio_url=LM_STUDIO_URL,
+        model_id=LM_STUDIO_MODEL_ID
+    )
+
+    print("система готова")
+    print("начинаю прогон...\n")
+
+    rows = []
+
+    for i, text in enumerate(texts, start=1):
+        print(f"[{i}/{len(texts)}] думаю...")
+
+        try:
+            result = pipeline.run(text)
+
+            if result.get("status") == "ok":
+                final_result = result.get("result", {})
+                rows.append({
+                    "id": i,
+                    "text": text,
+                    "status": "ok",
+                    "source": result.get("source", ""),
+                    "input_params": final_result.get("input_params", ""),
+                    "object": final_result.get("object", ""),
+                    "output_params": final_result.get("output_params", ""),
+                })
+            else:
+                rows.append({
+                    "id": i,
+                    "text": text,
+                    "status": "error",
+                    "source": "",
+                    "input_params": "",
+                    "object": "",
+                    "output_params": "",
+                })
+
+        except Exception as e:
+            rows.append({
+                "id": i,
+                "text": text,
+                "status": f"exception: {str(e)}",
+                "source": "",
+                "input_params": "",
+                "object": "",
+                "output_params": "",
+            })
+
+    with open(output_path, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "id",
+                "text",
+                "status",
+                "source",
+                "input_params",
+                "object",
+                "output_params",
+            ]
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"\nготово")
+    print(f"результаты сохранены в: {output_path}")
+
+
+if __name__ == "__main__":
+    main()```
+
+===== ./src/create_chunks.py =====
+```python
+import pandas as pd
+from pathlib import Path
+import json
+import logging
+import math
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+def safe_str(value) -> str:
+    if isinstance(value, float) and math.isnan(value):
+        return ""
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def create_chunks(effect: dict) -> list[dict]:
+    chunks = []
+
+    effect_id = safe_str(effect.get("id", ""))
+    effect_name = safe_str(effect.get("name", ""))
+    description = safe_str(effect.get("description", ""))
+    canonical_description = safe_str(effect.get("canonical_description", ""))
+    description_hash = safe_str(effect.get("description_hash", ""))
+    input_params = safe_str(effect.get("input_params", ""))
+    output_params = safe_str(effect.get("output_params", ""))
+    effect_object = safe_str(effect.get("object", ""))
+    application = safe_str(effect.get("application", ""))
+    literature = safe_str(effect.get("literature", ""))
+
+    if description:
+        chunks.append({
+            "chunk_id": f"{effect_id}_desc",
+            "effect_id": effect_id,
+            "effect_name": effect_name,
+            "chunk_type": "description",
+            "text": f"Эффект: {effect_name}. Описание: {description}",
+            "description": description,
+            "canonical_description": canonical_description,
+            "description_hash": description_hash,
+            "input_params": input_params,
+            "object": effect_object,
+            "output_params": output_params
+        })
+
+    if input_params:
+        chunks.append({
+            "chunk_id": f"{effect_id}_input",
+            "effect_id": effect_id,
+            "effect_name": effect_name,
+            "chunk_type": "input",
+            "text": f"Эффект: {effect_name}. Входное воздействие: {input_params}",
+            "description": description,
+            "canonical_description": canonical_description,
+            "description_hash": description_hash,
+            "input_params": input_params,
+            "object": effect_object,
+            "output_params": output_params
+        })
+
+    if effect_object:
+        chunks.append({
+            "chunk_id": f"{effect_id}_object",
+            "effect_id": effect_id,
+            "effect_name": effect_name,
+            "chunk_type": "object",
+            "text": f"Эффект: {effect_name}. Объект воздействия: {effect_object}",
+            "description": description,
+            "canonical_description": canonical_description,
+            "description_hash": description_hash,
+            "input_params": input_params,
+            "object": effect_object,
+            "output_params": output_params
+        })
+
+    if output_params:
+        chunks.append({
+            "chunk_id": f"{effect_id}_output",
+            "effect_id": effect_id,
+            "effect_name": effect_name,
+            "chunk_type": "output",
+            "text": f"Эффект: {effect_name}. Выходное воздействие: {output_params}",
+            "description": description,
+            "canonical_description": canonical_description,
+            "description_hash": description_hash,
+            "input_params": input_params,
+            "object": effect_object,
+            "output_params": output_params
+        })
+
+    chunks.append({
+        "chunk_id": f"{effect_id}_triple",
+        "effect_id": effect_id,
+        "effect_name": effect_name,
+        "chunk_type": "triple",
+        "text": (
+            f"Эффект: {effect_name}. "
+            f"Вход: {input_params}. "
+            f"Объект: {effect_object}. "
+            f"Выход: {output_params}."
+        ),
+        "description": description,
+        "canonical_description": canonical_description,
+        "description_hash": description_hash,
+        "input_params": input_params,
+        "object": effect_object,
+        "output_params": output_params
+    })
+
+    chunks.append({
+        "chunk_id": f"{effect_id}_record",
+        "effect_id": effect_id,
+        "effect_name": effect_name,
+        "chunk_type": "record",
+        "text": (
+            f"Эффект: {effect_name}\n"
+            f"Описание: {description}\n"
+            f"Вход: {input_params}\n"
+            f"Объект: {effect_object}\n"
+            f"Выход: {output_params}"
+        ),
+        "description": description,
+        "canonical_description": canonical_description,
+        "description_hash": description_hash,
+        "input_params": input_params,
+        "object": effect_object,
+        "output_params": output_params
+    })
+
+    if application:
+        chunks.append({
+            "chunk_id": f"{effect_id}_app",
+            "effect_id": effect_id,
+            "effect_name": effect_name,
+            "chunk_type": "application",
+            "text": f"Эффект: {effect_name}. Применение: {application}",
+            "description": description,
+            "canonical_description": canonical_description,
+            "description_hash": description_hash,
+            "input_params": input_params,
+            "object": effect_object,
+            "output_params": output_params
+        })
+
+    if literature:
+        chunks.append({
+            "chunk_id": f"{effect_id}_lit",
+            "effect_id": effect_id,
+            "effect_name": effect_name,
+            "chunk_type": "literature",
+            "text": f"Эффект: {effect_name}. Литература: {literature}",
+            "description": description,
+            "canonical_description": canonical_description,
+            "description_hash": description_hash,
+            "input_params": input_params,
+            "object": effect_object,
+            "output_params": output_params
+        })
+
+    return chunks
+
+
+def main():
+    csv_path = Path(__file__).parent.parent / "data" / "parsed_effects.csv"
+    df = pd.read_csv(csv_path)
+
+    logging.info(f"загружено {len(df)} эффектов")
+
+    all_chunks = []
+    for _, row in df.iterrows():
+        chunks = create_chunks(row.to_dict())
+        all_chunks.extend(chunks)
+
+    logging.info(f"создано {len(all_chunks)} чанков")
+
+    chunks_path = Path(__file__).parent.parent / "data" / "chunks.json"
+    with open(chunks_path, "w", encoding="utf-8") as f:
+        json.dump(all_chunks, f, ensure_ascii=False, indent=2)
+
+    logging.info(f"чанки сохранены в {chunks_path}")
+
+    stats = {}
+    for chunk in all_chunks:
+        stats[chunk["chunk_type"]] = stats.get(chunk["chunk_type"], 0) + 1
+
+    print("\nстатистика по типам чанков:")
+    for k, v in stats.items():
+        print(f"  {k}: {v}")
+
+
+if __name__ == "__main__":
+    main()```
+
+===== ./src/retriever.py =====
+```python
+from pathlib import Path
+import logging
+
+import lancedb
+from sentence_transformers import SentenceTransformer
+
+from config import LANCEDB_PATH, LANCEDB_TABLE, EMBEDDING_MODEL
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+class FERetriever:
+    def __init__(
+        self,
+        db_path: str = LANCEDB_PATH,
+        table_name: str = LANCEDB_TABLE,
+        embedding_model: str = EMBEDDING_MODEL
+    ):
+        project_root = Path(__file__).parent.parent
+        self.db_path = project_root / db_path
+
+        self.db = lancedb.connect(str(self.db_path))
+        self.table = self.db.open_table(table_name)
+
+        logging.info("Загружаем embedding model для retrieval...")
+        self.embedder = SentenceTransformer(embedding_model)
+        logging.info("Embedding model загружена")
+
+    def _embed_query(self, query_text: str):
+        return self.embedder.encode(
+            f"query: {query_text}",
+            normalize_embeddings=True
+        ).tolist()
+
+    @staticmethod
+    def _format_row(row: dict) -> dict:
+        return {
+            "chunk_id": row.get("chunk_id", ""),
+            "effect_id": row.get("effect_id", ""),
+            "effect_name": row.get("effect_name", ""),
+            "chunk_type": row.get("chunk_type", ""),
+            "text": row.get("text", ""),
+            "description": row.get("description", ""),
+            "canonical_description": row.get("canonical_description", ""),
+            "description_hash": row.get("description_hash", ""),
+            "input_params": row.get("input_params", ""),
+            "object": row.get("object", ""),
+            "output_params": row.get("output_params", ""),
+            "_distance": float(row.get("_distance")) if row.get("_distance", None) is not None else None,
+        }
+
+    @staticmethod
+    def _deduplicate_by_effect(results: list[dict]) -> list[dict]:
+        unique = []
+        seen = set()
+
+        for row in results:
+            key = row.get("effect_id", "")
+            if key and key not in seen:
+                unique.append(row)
+                seen.add(key)
+
+        return unique
+
+    def search(
+        self,
+        query_text: str,
+        top_k: int = 5,
+        chunk_types: list[str] | None = None
+    ) -> list[dict]:
+        if not query_text or not query_text.strip():
+            return []
+
+        query_vector = self._embed_query(query_text.strip())
+
+        results = (
+            self.table.search(query_vector)
+            .limit(top_k * 8)
+            .to_list()
+        )
+
+        if chunk_types:
+            allowed = set(chunk_types)
+            results = [row for row in results if row.get("chunk_type") in allowed]
+
+        formatted = [self._format_row(row) for row in results]
+        return formatted[:top_k]
+
+    def search_examples(self, query_text: str, top_k: int = 5) -> list[dict]:
+        results = self.search(
+            query_text,
+            top_k=top_k * 6,
+            chunk_types=["record", "description", "triple"]
+        )
+
+        for row in results:
+            distance = row.get("_distance", 1.0) or 1.0
+            bonus = 0.0
+
+            if row.get("chunk_type") == "record":
+                bonus = 0.03
+            elif row.get("chunk_type") == "description":
+                bonus = 0.02
+            elif row.get("chunk_type") == "triple":
+                bonus = 0.01
+
+            row["_rank_score"] = (1.0 - distance) + bonus
+
+        best_by_effect = {}
+        for row in results:
+            effect_id = row.get("effect_id", "")
+            if not effect_id:
+                continue
+
+            if effect_id not in best_by_effect:
+                best_by_effect[effect_id] = row
+            else:
+                if row["_rank_score"] > best_by_effect[effect_id]["_rank_score"]:
+                    best_by_effect[effect_id] = row
+
+        ranked = list(best_by_effect.values())
+        ranked.sort(key=lambda x: x.get("_rank_score", 0.0), reverse=True)
+        ranked = self._rerank_by_structure(ranked, query_text)
+
+        return ranked[:top_k]
+
+    def _rerank_by_structure(self, results: list[dict], query_text: str) -> list[dict]:
+        if not results:
+            return results
+
+        query_lower = query_text.lower()
+
+        input_keywords = {
+            "температур": "температура",
+            "концентрац": "концентрация",
+            "коэффициент теплопередач": "коэффициент теплопередачи",
+            "магнитн": "магнитное поле",
+            "электрическ поле": "электрическое поле",
+            "давлен": "давление",
+            "толщин": "толщина",
+            "скорост охлажден": "скорость охлаждения",
+            "объемн дол": "объемная доля",
+        }
+
+        output_keywords = {
+            "потер": "потери",
+            "коэффициент линейного расширения": "тклр",
+            "тклр": "тклр",
+            "намагничен": "намагниченность",
+            "сопротивлен": "сопротивление",
+            "теплоемкост": "теплоёмкость",
+            "скорост охлажден": "скорость охлаждения",
+            "вязкост": "вязкость",
+            "температур кюри": "температура кюри",
+            "коэрцитивн": "коэрцитивная сила",
+            "прочност": "прочность",
+        }
+
+        query_input_type = next(
+            (v for k, v in input_keywords.items() if k in query_lower), None
+        )
+        query_output_type = next(
+            (v for k, v in output_keywords.items() if k in query_lower), None
+        )
+
+        for row in results:
+            bonus = row.get("_rank_score", 0.0)
+
+            inp = str(row.get("input_params", "")).lower()
+            out = str(row.get("output_params", "")).lower()
+
+            if query_input_type and query_input_type in inp:
+                bonus += 0.05
+
+            if query_output_type and query_output_type in out:
+                bonus += 0.10
+
+            row["_rank_score"] = bonus
+
+        results.sort(key=lambda x: x.get("_rank_score", 0.0), reverse=True)
+        return results
+
+    def get_example_bundle(self, query_text: str, main_k: int = 1, aux_k: int = 2) -> dict:
+
+        examples = self.search_examples(query_text, top_k=main_k + aux_k + 3)
+
+        if not examples:
+            return {
+                "main_example": None,
+                "aux_examples": []
+            }
+
+        main_example = examples[0]
+
+        aux_examples = []
+        main_id = main_example.get("effect_id", "")
+
+        for ex in examples[1:]:
+            if ex.get("effect_id", "") != main_id:
+                aux_examples.append(ex)
+            if len(aux_examples) >= aux_k:
+                break
+
+        return {
+            "main_example": main_example,
+            "aux_examples": aux_examples
+        }
+
+
+if __name__ == "__main__":
+    retriever = FERetriever()
+
+    test_text = (
+        "Магнитопластический эффект повышение пластической деформации металлов "
+        "под действием магнитного поля в условиях нагружения."
+    )
+
+    bundle = retriever.get_example_bundle(test_text, main_k=1, aux_k=2)
+    print(bundle)
+```
+
+===== ./src/tech_function_extractor.py =====
+```python
+
+import re
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
+
+from config import KEYT5_MODEL_PATH
+
+
+class TechFunctionExtractor:
+    def __init__(
+        self,
+        model_path: str = KEYT5_MODEL_PATH,
+        max_input_length: int = 512,
+        max_output_length: int = 128,
+        num_beams: int = 5,
+        repetition_penalty: float = 1.2,
+    ):
+        self.model_path = model_path
+        self.max_input_length = max_input_length
+        self.max_output_length = max_output_length
+        self.num_beams = num_beams
+        self.repetition_penalty = repetition_penalty
+
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
+        self.model.eval()
+
+    def preprocess_for_keyt5(self, text: str) -> str:
+        priority_markers = [
+            "технический результат",
+            "цель изобретения",
+            "задача изобретения",
+            "технической задачей",
+            "техническим результатом",
+            "изобретение позволяет",
+            "достигается",
+            "обеспечивает",
+            "позволяет обеспечить",
+            "направлено на",
+        ]
+
+        sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+        sentences = [s.strip() for s in sentences if s.strip()]
+
+        priority = []
+        other = []
+
+        for sent in sentences:
+            sent_low = sent.lower()
+            if any(m in sent_low for m in priority_markers):
+                priority.append(sent)
+            else:
+                other.append(sent)
+
+        ordered = priority + other
+
+        result = ""
+        for sent in ordered:
+            if len(result) + len(sent) > self.max_input_length * 4:
+                break
+            result += sent + " "
+
+        return result.strip() if result.strip() else text[:self.max_input_length * 4]
+
+    def extract(self, text: str) -> list[str]:
+        if not text or not text.strip():
+            return []
+
+        preprocessed = self.preprocess_for_keyt5(text)
+
+        inputs = self.tokenizer(
+            preprocessed,
+            return_tensors="pt",
+            truncation=True,
+            max_length=self.max_input_length,
+            padding=False,
+        )
+
+        with torch.no_grad():
+            output = self.model.generate(
+                **inputs,
+                max_length=self.max_output_length,
+                num_beams=self.num_beams,
+                repetition_penalty=self.repetition_penalty,
+            )
+
+        raw = self.tokenizer.decode(output[0], skip_special_tokens=True)
+
+        functions = [f.strip().rstrip(";").strip() for f in raw.split(";")]
+        functions = [f for f in functions if f]
+
+        return functions```
+
+===== ./src/compare_ranked.py =====
+```python
+import csv
+import re
+import textwrap
+from collections import Counter
+from pathlib import Path
+
+import numpy as np
+from sentence_transformers import SentenceTransformer
+
+from config import (
+    EMBEDDING_MODEL,
+    EVAL_GROUND_TRUTH_PATH as GROUND_TRUTH_PATH,
+    EVAL_RAG_RESULTS_PATH as RAG_RESULTS_PATH,
+    EVAL_NO_RAG_RESULTS_PATH as NO_RAG_RESULTS_PATH,
+    EVAL_COMPARISON_DETAILS_OUT as DETAILS_OUT,
+    EVAL_COMPARISON_SUMMARY_OUT as SUMMARY_OUT,
+)
+
+
+print("загружаем модель эмбеддингов...")
+EMBEDDER = SentenceTransformer(EMBEDDING_MODEL)
+print("модель загружена\n")
+
+SIM_FULL = 0.92
+SIM_BASE = 0.80
+
+_EMB_CACHE: dict[str, np.ndarray] = {}
+
+
+def embed(text: str) -> np.ndarray:
+    text = str(text or "").strip()
+    if not text:
+        return np.zeros(384, dtype=np.float32)
+    if text in _EMB_CACHE:
+        return _EMB_CACHE[text]
+    vec = EMBEDDER.encode(
+        f"query: {text}",
+        normalize_embeddings=True,
+        convert_to_numpy=True,
+    )
+    _EMB_CACHE[text] = vec
+    return vec
+
+
+def cosine(a: np.ndarray, b: np.ndarray) -> float:
+    if not np.any(a) or not np.any(b):
+        return 0.0
+    return float(np.dot(a, b))
+
+
+def text_similarity(a: str, b: str) -> float:
+    """Косинусное сходство двух строк после OCR-фикса и базовой очистки."""
+    a = canonicalize(fix_ocr(str(a or "")))
+    b = canonicalize(fix_ocr(str(b or "")))
+    if not a or not b:
+        return 0.0
+    return cosine(embed(a), embed(b))
+
+
+def wrap_text(text: str, width: int = 80) -> str:
+    text = str(text or "").strip()
+    return textwrap.fill(text, width=width)
+
+
+LATIN_TO_CYRILLIC = {
+    'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н',
+    'K': 'К', 'M': 'М', 'O': 'О', 'P': 'Р', 'T': 'Т',
+    'X': 'Х', 'Y': 'У',
+    'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р',
+    'x': 'х', 'y': 'у',
+}
+
+
+def fix_ocr(text: str) -> str:
+    def fix_word(word):
+        has_cyr = any('\u0400' <= c <= '\u04ff' for c in word)
+        has_lat = any(c in LATIN_TO_CYRILLIC for c in word)
+        if has_cyr and has_lat:
+            return ''.join(LATIN_TO_CYRILLIC.get(c, c) for c in word)
+        return word
+
+    tokens = re.split(r'(\s+|[^\w])', text)
+    return ''.join(fix_word(t) for t in tokens)
+
+
+def clean(text: str) -> str:
+    text = str(text or "").strip()
+    text = text.replace("ё", "е").replace("Ё", "е")
+    text = text.lower()
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+SYNONYMS: dict[str, str] = {
+    "ферромагнетик": "ферромагнитный материал",
+    "ферромагнитный материал": "ферромагнитный материал",
+    "аморфный сплав": "аморфные сплавы",
+    "аморфные сплавы": "аморфные сплавы",
+    "металл": "металлы",
+    "лазерное излучение": "электромагнитное излучение",
+    "силовое (механическое воздействие)": "механическое воздействие",
+    "силовое(механическое воздействие)": "механическое воздействие",
+    "силовое (механическое) воздействие": "механическое воздействие",
+    "упругие (акустические) волны": "ультразвук",
+    "упругие(акустические)волны": "ультразвук",
+}
+
+
+def canonicalize(text: str) -> str:
+    t = clean(text)
+    return SYNONYMS.get(t, t)
+
+def clean_pred_field(text: str) -> str:
+    text = str(text or "").strip()
+    text = re.sub(r"(?i)объект\s+воздействия\s*\([^)]*\)\s*[—\-–:]+\s*это\s*", "", text)
+    text = re.sub(r"(?i)входные\s+параметры?\s*\([^)]*\)\s*[—\-–:]+\s*это?\s*", "", text)
+    text = re.sub(r"(?i)выходные\s+параметры?\s*\([^)]*\)\s*[—\-–:]+\s*это?\s*", "", text)
+    text = re.sub(r"(?i)(input_params|output_params|object)\s*[=:—\-–]+\s*", "", text)
+    return text.strip()
+
+def split_entrada_items(text: str) -> list[str]:
+    text = str(text or "").strip()
+    if not text or text.lower() in ("nan", "none", ""):
+        return []
+
+    if re.search(r"(?i)(вход|выход)\d+\s*:", text):
+        parts = re.split(r"(?i)(?:вход|выход)\d+\s*:", text)
+        return [p.strip() for p in parts if p.strip()]
+
+    if "," in text and text.count(".") <= 1:
+        parts = [p.strip() for p in text.split(",") if p.strip()]
+        if len(parts) > 1:
+            return parts
+
+    return [text.strip()]
+
+
+def extract_name_and_qualities(item: str) -> tuple[str, list[str]]:
+    parts = [p.strip() for p in re.split(r"[.;]", item) if p.strip()]
+    if not parts:
+        return "", []
+
+    name = canonicalize(parts[0])
+
+    quality_markers = [
+        "переменн", "постоянн", "высокочастот", "низкочастот",
+        "импульс", "неоднород", "однород", "увеличен", "уменьшен",
+        "снижени", "повышени", "монотон", "немонотон",
+    ]
+    qualities = []
+    for p in parts[1:]:
+        pc = clean(p)
+        if any(m in pc for m in quality_markers):
+            qualities.append(canonicalize(p))
+
+    return name, qualities
+
+
+def parse_field(text: str) -> list[tuple[str, list[str]]]:
+    items = split_entrada_items(text)
+    return [extract_name_and_qualities(it) for it in items if it]
+
+
+def names_match(a: str, b: str) -> bool:
+    return text_similarity(a, b) >= SIM_BASE
+
+
+def qualities_match(gold_qs: list[str], pred_qs: list[str]) -> bool:
+    if not gold_qs:
+        return True
+    if not pred_qs:
+        return False
+    for gq in gold_qs:
+        if not any(names_match(gq, pq) for pq in pred_qs):
+            return False
+    return True
+
+
+def field_full_match(gold: str, pred: str) -> bool:
+    g = canonicalize(fix_ocr(str(gold or "")))
+    p = canonicalize(fix_ocr(str(pred or "")))
+    if not g or not p:
+        return False
+    return g == p
+
+
+def field_base_match(gold_parsed: list, pred_parsed: list) -> bool:
+    gold_names = [name for name, _ in gold_parsed if name]
+    if not gold_names:
+        return False
+    pred_names = [name for name, _ in pred_parsed if name]
+    if not pred_names:
+        return False
+    return all(any(names_match(gn, pn) for pn in pred_names) for gn in gold_names)
+
+
+def field_quality_match(gold_parsed: list, pred_parsed: list) -> bool:
+    gold_all_q = [q for _, qs in gold_parsed for q in qs]
+    if not gold_all_q:
+        return True
+    pred_all_q = [q for _, qs in pred_parsed for q in qs]
+    return qualities_match(gold_all_q, pred_all_q)
+
+
+def object_match(gold: str, pred: str) -> bool:
+    return names_match(gold, pred)
+
+def rank_match(
+    gold_input: str, gold_object: str, gold_output: str,
+    pred_input: str, pred_object: str, pred_output: str,
+) -> str:
+    gold_input  = fix_ocr(str(gold_input  or ""))
+    gold_object = fix_ocr(str(gold_object or ""))
+    gold_output = fix_ocr(str(gold_output or ""))
+
+    pred_input  = clean_pred_field(str(pred_input  or ""))
+    pred_object = clean_pred_field(str(pred_object or ""))
+    pred_output = clean_pred_field(str(pred_output or ""))
+
+    gi = parse_field(gold_input)
+    pi = parse_field(pred_input)
+    go = parse_field(gold_output)
+    po = parse_field(pred_output)
+
+    inp_full = field_full_match(gold_input, pred_input)
+    inp_base = field_base_match(gi, pi)
+    inp_qual = field_quality_match(gi, pi)
+
+    out_full = field_full_match(gold_output, pred_output)
+    out_base = field_base_match(go, po)
+    out_qual = field_quality_match(go, po)
+
+    obj_ok = object_match(gold_object, pred_object)
+
+    if inp_full and obj_ok and out_full:                            return "I"
+    if obj_ok and inp_base and inp_qual and out_base and out_qual:  return "II"
+    if obj_ok and inp_base and out_base:                            return "III"
+    if inp_full and out_full:                                       return "IV"
+    if inp_base and inp_qual and out_base and out_qual:             return "V"
+    if inp_base and out_base:                                       return "VI"
+    return "NONE"
+
+
+RANK_SCORE = {"I": 1.0, "II": 0.7, "III": 0.5, "IV": 0.3,
+              "V": 0.15, "VI": 0.03, "NONE": 0.0}
+
+
+def load_csv(path: Path) -> dict[int, dict]:
+    rows = {}
+    with open(path, "r", encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            try:
+                idx = int(str(row.get("id", "")).strip())
+                rows[idx] = row
+            except ValueError:
+                pass
+    return rows
+
+
+def summarize(details: list[dict], prefix: str) -> dict:
+    ranks  = [r[f"{prefix}_rank"]  for r in details]
+    scores = [float(r[f"{prefix}_score"]) for r in details]
+    cnt    = Counter(ranks)
+    total  = len(details) or 1
+
+    strong         = cnt["I"] + cnt["II"] + cnt["III"]
+    weak_or_better = strong + cnt["IV"] + cnt["V"] + cnt["VI"]
+
+    return {
+        "system":             prefix,
+        "total":              total,
+        "I":                  cnt["I"],
+        "II":                 cnt["II"],
+        "III":                cnt["III"],
+        "IV":                 cnt["IV"],
+        "V":                  cnt["V"],
+        "VI":                 cnt["VI"],
+        "NONE":               cnt["NONE"],
+        "strong_precision_%": round(strong / total * 100, 2),
+        "weak_or_better_%":   round(weak_or_better / total * 100, 2),
+        "mean_similarity":    round(sum(scores) / total, 4),
+        "mean_similarity_percent": round(sum(scores) / total * 100, 2),
+    }
+
+def main():
+    gt     = load_csv(GROUND_TRUTH_PATH)
+    rag    = load_csv(RAG_RESULTS_PATH)
+    no_rag = load_csv(NO_RAG_RESULTS_PATH)
+
+    ids     = sorted(gt.keys())
+    details = []
+
+    for idx in ids:
+        gt_row     = gt.get(idx, {})
+        rag_row    = rag.get(idx, {})
+        no_rag_row = no_rag.get(idx, {})
+
+        gold_input  = gt_row.get("gold_input",  "")
+        gold_object = gt_row.get("gold_object", "")
+        gold_output = gt_row.get("gold_output", "")
+
+        r_input  = rag_row.get("input_params",  "")
+        r_object = rag_row.get("object",        "")
+        r_output = rag_row.get("output_params", "")
+
+        n_input  = no_rag_row.get("input_params",  "")
+        n_object = no_rag_row.get("object",        "")
+        n_output = no_rag_row.get("output_params", "")
+
+        rag_rank    = rank_match(gold_input, gold_object, gold_output,
+                                 r_input, r_object, r_output)
+        no_rag_rank = rank_match(gold_input, gold_object, gold_output,
+                                 n_input, n_object, n_output)
+
+        details.append({
+            "id":            idx,
+            "gold_input":    gold_input,
+            "gold_object":   gold_object,
+            "gold_output":   gold_output,
+            "rag_input":     r_input,
+            "rag_object":    r_object,
+            "rag_output":    r_output,
+            "rag_rank":      rag_rank,
+            "rag_score":     RANK_SCORE[rag_rank],
+            "no_rag_input":  n_input,
+            "no_rag_object": n_object,
+            "no_rag_output": n_output,
+            "no_rag_rank":   no_rag_rank,
+            "no_rag_score":  RANK_SCORE[no_rag_rank],
+        })
+
+    DETAILS_OUT.parent.mkdir(parents=True, exist_ok=True)
+    with open(DETAILS_OUT, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(details[0].keys()))
+        writer.writeheader()
+        writer.writerows(details)
+
+    summary_rows = [summarize(details, "rag"), summarize(details, "no_rag")]
+    with open(SUMMARY_OUT, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(summary_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(summary_rows)
+
+    print(f"Детали:  {DETAILS_OUT}")
+    print(f"Сводка:  {SUMMARY_OUT}\n")
+
+    for row in summary_rows:
+        print(f" {row['system'].upper()} ")
+        print(f"  Всего: {row['total']}")
+        for rank in ["I", "II", "III", "IV", "V", "VI", "NONE"]:
+            print(f"  Ранг {rank:4s}: {row[rank]:3d}")
+        print(f"  Сильное совпадение (I-III):   {row['strong_precision_%']}%")
+        print(f"  Любое совпадение (I-VI):      {row['weak_or_better_%']}%")
+        print(f"  Средний балл сходства:        {row['mean_similarity']}")
+        print()
+
+    for prefix in ("rag", "no_rag"):
+        print(f"\n{'=' * 50}")
+        print(f"  ID по рангам — {prefix.upper()}")
+        print(f"{'=' * 50}")
+
+        by_rank: dict[str, list] = {}
+        for row in details:
+            rank = row[f"{prefix}_rank"]
+            by_rank.setdefault(rank, []).append(str(row["id"]))
+
+        for rank in ["I", "II", "III", "IV", "V", "VI", "NONE"]:
+            ids = by_rank.get(rank, [])
+            ids_str = ", ".join(ids) if ids else "—"
+            print(f"  Ранг {rank:5s} ({len(ids):2d}): {ids_str}")
+
+    for prefix in ("rag", "no_rag"):
+        print(f"\n{'=' * 60}")
+        print(f" Примеры по рангам — {prefix.upper()} ")
+        print(f"{'=' * 60}")
+
+        seen_ranks: dict[str, dict] = {}
+        for row in details:
+            rank = row[f"{prefix}_rank"]
+            if rank not in seen_ranks:
+                seen_ranks[rank] = row
+
+        for rank in ["I", "II", "III", "IV", "V", "VI", "NONE"]:
+            if rank not in seen_ranks:
+                continue
+
+            row = seen_ranks[rank]
+
+            print(f"\n--- ранг {rank} (id={row['id']}) ---")
+            print("-" * 60)
+            print(f"[эталон]")
+            print("Вход:")
+            print(wrap_text(row["gold_input"]))
+            print("Объект:")
+            print(wrap_text(row["gold_object"]))
+            print("Выход:")
+            print(wrap_text(row["gold_output"]))
+
+            print(f"\n[итог]")
+            print("Вход:")
+            print(wrap_text(row[f"{prefix}_input"]))
+            print("Объект:")
+            print(wrap_text(row[f"{prefix}_object"]))
+            print("Выход:")
+            print(wrap_text(row[f"{prefix}_output"]))
+
+
+if __name__ == "__main__":
+    main()```
+
+===== ./src/build_thesaurus_db.py =====
+```python
+import xml.etree.ElementTree as ET
+import lancedb
+from sentence_transformers import SentenceTransformer
+from pathlib import Path
+import logging
+import pyarrow as pa
+import re
+import html
+import hashlib
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+def clean_text(text: str) -> str:
+    if not text:
+        return ""
+
+    text = html.unescape(str(text))
+    text = text.replace("\xa0", " ")
+    text = text.replace("\n", " ")
+    text = text.replace("\r", " ")
+    text = text.replace("\t", " ")
+    text = text.replace("–", "-").replace("—", "-").replace("−", "-")
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
+
+
+def canonicalize_text(text: str) -> str:
+    text = clean_text(text).lower()
+    text = re.sub(r"\s*([,.;:!?()])\s*", r"\1", text)
+    text = re.sub(r"-{2,}", "-", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def text_hash(text: str) -> str:
+    return hashlib.md5(text.encode("utf-8")).hexdigest()
+
+
+def load_and_prepare_xml(xml_path: str) -> ET.Element:
+    with open(xml_path, "r", encoding="utf-8", errors="replace") as f:
+        raw_text = f.read()
+
+    raw_text = raw_text.replace("\ufeff", "")
+    raw_text = raw_text.replace("\r\n", "\n").replace("\r", "\n")
+    raw_text = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", raw_text)
+    raw_text = raw_text.strip()
+
+    raw_text = re.sub(r"^\s*<\?xml[^>]*\?>", "", raw_text).strip()
+
+    raw_text = f"<root>\n{raw_text}\n</root>"
+
+    return ET.fromstring(raw_text)
+
+
+def build_thesaurus_table():
+    db_path = "./lancedb_data"
+    xml_file = Path(__file__).parent.parent / "data" / "Thes.xml"
+    table_name = "thesaurus"
+    embedding_model = "intfloat/multilingual-e5-small"
+
+    logging.info("создание таблицы тезауруса")
+
+    db = lancedb.connect(str(Path(__file__).parent.parent / db_path))
+    embedder = SentenceTransformer(embedding_model)
+
+    root = load_and_prepare_xml(xml_file)
+
+    nodes = {}
+
+    for node in root.findall(".//Thes"):
+        node_id = clean_text(node.findtext("id", ""))
+        name = clean_text(node.findtext("name", ""))
+        parent = clean_text(node.findtext("parent", ""))
+
+        if node_id:
+            nodes[node_id] = {
+                "id": node_id,
+                "name": name,
+                "canonical_name": canonicalize_text(name),
+                "name_hash": text_hash(canonicalize_text(name)) if name else "",
+                "parent": parent,
+                "path_list": [],
+                "full_path": "",
+                "path_depth": 0,
+                "top_level": ""
+            }
+
+    def get_path(node_id: str):
+        path = []
+        current = node_id
+        visited = set()
+
+        while current and current in nodes and current not in visited:
+            visited.add(current)
+            node = nodes[current]
+
+            if node["name"]:
+                path.insert(0, node["name"])
+
+            current = node["parent"]
+            if current == "ROOT" or not current:
+                break
+
+        return path
+
+    for node_id in nodes:
+        path = get_path(node_id)
+        nodes[node_id]["path_list"] = path
+        nodes[node_id]["full_path"] = " > ".join(path)
+        nodes[node_id]["path_depth"] = len(path)
+        nodes[node_id]["top_level"] = path[0] if path else ""
+
+    data = []
+    for node_id, node in nodes.items():
+        search_text = (
+            f"Термин: {node['name']}. "
+            f"Путь: {node['full_path']}. "
+            f"ID: {node['id']}. "
+            f"Родитель: {node['parent']}."
+        )
+
+        vector = embedder.encode(
+            f"passage: {search_text}",
+            normalize_embeddings=True
+        ).tolist()
+
+        data.append({
+            "vector": vector,
+            "node_id": node["id"],
+            "name": node["name"],
+            "canonical_name": node["canonical_name"],
+            "name_hash": node["name_hash"],
+            "full_path": node["full_path"],
+            "path": " > ".join(node["path_list"]),
+            "path_depth": node["path_depth"],
+            "top_level": node["top_level"],
+            "parent": node["parent"],
+            "search_text": search_text
+        })
+
+    schema = pa.schema([
+        pa.field("vector", pa.list_(pa.float32(), embedder.get_sentence_embedding_dimension())),
+        pa.field("node_id", pa.string()),
+        pa.field("name", pa.string()),
+        pa.field("canonical_name", pa.string()),
+        pa.field("name_hash", pa.string()),
+        pa.field("full_path", pa.string()),
+        pa.field("path", pa.string()),
+        pa.field("path_depth", pa.int32()),
+        pa.field("top_level", pa.string()),
+        pa.field("parent", pa.string()),
+        pa.field("search_text", pa.string()),
+    ])
+
+    table = db.create_table(table_name, schema=schema, mode="overwrite")
+
+    batch_size = 100
+    for i in range(0, len(data), batch_size):
+        table.add(data[i:i + batch_size])
+        logging.info(f"загружено {min(i + batch_size, len(data))} из {len(data)}")
+
+    table.create_index(metric="cosine")
+    logging.info(f"таблица тезауруса готова. всего записей: {table.count_rows()}")
+
+    return table
+
+
+if __name__ == "__main__":
+    build_thesaurus_table()```
+
+===== ./src/parse_xml.py =====
+```python
+import xml.etree.ElementTree as ET
+import pandas as pd
+from pathlib import Path
+import logging
+import re
+import hashlib
+import html
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+def clean_text(text: str) -> str:
+
+    if not text:
+        return ""
+
+    text = html.unescape(str(text))
+
+    text = text.replace("\xa0", " ")
+    text = text.replace("\n", " ")
+    text = text.replace("\r", " ")
+    text = text.replace("\t", " ")
+
+    text = text.replace("–", "-").replace("—", "-").replace("−", "-")
+
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
+
+
+def canonicalize_text(text: str) -> str:
+
+    text = clean_text(text).lower()
+
+    text = re.sub(r"\s*([,.;:!?()])\s*", r"\1", text)
+
+    text = re.sub(r"-{2,}", "-", text)
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
+
+
+def text_hash(text: str) -> str:
+
+    return hashlib.md5(text.encode("utf-8")).hexdigest()
+
+def load_and_prepare_xml(xml_path: str) -> ET.Element:
+
+    with open(xml_path, "r", encoding="utf-8", errors="replace") as f:
+        raw_text = f.read()
+
+    raw_text = raw_text.replace("\ufeff", "")
+    raw_text = raw_text.replace("\r\n", "\n").replace("\r", "\n")
+
+    raw_text = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", raw_text)
+
+    raw_text = raw_text.strip()
+
+    raw_text = re.sub(r"^\s*<\?xml[^>]*\?>", "", raw_text).strip()
+
+    raw_text = raw_text.replace("<FEText\n", "<FEText>\n")
+
+    raw_text = f"<root>\n{raw_text}\n</root>"
+
+    return ET.fromstring(raw_text)
+
+def parse_fetext_xml(xml_path: str) -> pd.DataFrame:
+    logging.info(f"начинаем парсинг файла: {xml_path}")
+
+    root = load_and_prepare_xml(xml_path)
+
+    effects = []
+
+    for effect in root.findall('.//FEText'):
+        effect_id = clean_text(effect.findtext('IDFE', ''))
+
+        if not effect_id:
+            continue
+
+        description = clean_text(effect.findtext('text', ''))
+        canonical_description = canonicalize_text(description)
+
+        effect_data = {
+            'id': effect_id,
+            'name': clean_text(effect.findtext('name', '')),
+            'description': description,
+            'canonical_description': canonical_description,
+            'description_hash': text_hash(canonical_description) if canonical_description else "",
+            'input_params': clean_text(effect.findtext('textInp', '')),
+            'output_params': clean_text(effect.findtext('textOut', '')),
+            'object': clean_text(effect.findtext('textObj', '')),
+            'application': clean_text(effect.findtext('textApp', '')),
+            'literature': clean_text(effect.findtext('textLit', ''))
+        }
+
+        effects.append(effect_data)
+
+    df = pd.DataFrame(effects)
+
+    logging.info(f"найдено {len(df)} эффектов")
+
+    df = df[df['description'] != ""]
+
+    output_path = Path(__file__).parent.parent / 'data' / 'parsed_effects.csv'
+    df.to_csv(output_path, index=False, encoding='utf-8')
+
+    logging.info(f"сохранено в {output_path}")
+
+    return df
+
+
+if __name__ == "__main__":
+    xml_file = Path(__file__).parent.parent / 'data' / 'FEText.xml'
+
+    df = parse_fetext_xml(xml_file)
+
+    print("\nпервые 3 эффекта:")
+    print(df[['id', 'name', 'description_hash']].head(3))```
+
+===== ./src/lm_studio_client.py =====
+```python
+import requests
+import logging
+import re
+from typing import Optional
+
+from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+class LMStudioClient:
+    def __init__(
+        self,
+        base_url: str = LM_STUDIO_URL,
+        model_id: str = LM_STUDIO_MODEL_ID,
+        timeout: int = 300
+    ):
+        self.base_url = base_url
+        self.model_id = model_id
+        self.timeout = timeout
+
+    @staticmethod
+    def clean_response_text(text: str) -> str:
+        if not text:
+            return ""
+
+        text = text.strip()
+
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+        text = text.strip()
+
+        json_fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, flags=re.DOTALL)
+        if json_fence:
+            return json_fence.group(1).strip()
+
+        text = re.sub(r"^```json\s*", "", text, flags=re.IGNORECASE | re.MULTILINE)
+        text = re.sub(r"^```\s*", "", text, flags=re.MULTILINE)
+        text = re.sub(r"\s*```$", "", text, flags=re.MULTILINE)
+
+        start = text.find("{")
+        if start > 0:
+            text = text[start:]
+
+        return text.strip()
+
+    def chat(
+            self,
+            system_prompt: str,
+            user_prompt: str,
+            temperature: float = 0.0,
+            max_tokens: int = 2000
+    ) -> str:
+        prefix = f"{system_prompt}\n\n" if system_prompt and system_prompt.strip() else ""
+        payload = {
+            "model": self.model_id,
+            "prompt": f"{prefix}### Текст:\n{user_prompt}\n\n### JSON:\n<think>\n\n</think>\n",
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stop": ["###", "\n\n\n"],
+        }
+
+        logging.info("отправка запроса в лм студио")
+
+        response = requests.post(
+            self.base_url,
+            json=payload,
+            timeout=self.timeout
+        )
+
+        response.raise_for_status()
+        data = response.json()
+
+        content = data["choices"][0]["text"]
+        logging.info(f"RAW ответ модели ПОЛНЫЙ: '{content}'")
+        return self.clean_response_text(content)
+
+    def chat_optional(self, system_prompt, user_prompt, temperature=0.0, max_tokens=2000):
+        for attempt in range(3):
+            try:
+                return self.chat(
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                )
+            except requests.RequestException as e:
+                err_body = ""
+                if hasattr(e, "response") and e.response is not None:
+                    try:
+                        err_body = e.response.text[:500]
+                    except Exception:
+                        pass
+                logging.error(
+                    f"попытка {attempt + 1}/3 — ошибка запроса: {e}\n"
+                    f"тело ответа: {err_body}"
+                )
+                if attempt == 2:
+                    return None
+            except KeyError as e:
+                logging.error(f"неожиданная структура ответа: {e}")
+                return None
+            except Exception as e:
+                logging.error(f"непредвиденная ошибка: {e}")
+                return None
+        return None
+
+
+if __name__ == "__main__":
+    client = LMStudioClient()
+
+    system_prompt = (
+        "ты извлекаешь структуру физического эффекта. "
+        "отвечай кратко и строго по запросу."
+    )
+
+    user_prompt = (
+        "текст: затухание электромагнитных волн по мере их проникновения "
+        "в глубь проводящей среды. "
+        "назови только физический эффект."
+    )
+
+    result = client.chat_optional(system_prompt, user_prompt)
+
+    print("\nрезультат:")
+    print(result if result else "нет ответа")
+```
+
+===== ./src/raw_extractor.py =====
+```python
+import json
+import logging
+import re
+
+from lm_studio_client import LMStudioClient
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+class RawExtractor:
+    def __init__(
+        self,
+        lm_studio_url: str = "http://79.170.162.18:1234/v1/chat/completions",
+        model_id: str = "qwen3-8b"
+    ):
+        self.lm_client = LMStudioClient(
+            base_url=lm_studio_url,
+            model_id=model_id
+        )
+
+    @staticmethod
+    def build_examples_context(retrieved_examples: list[dict]) -> str:
+        if not retrieved_examples:
+            return "нет найденных похожих примеров."
+
+        parts = []
+        for i, ex in enumerate(retrieved_examples[:3], start=1):
+            parts.append(
+                f"Пример {i}:\n"
+                f"Эффект: {ex.get('effect_name', '')}\n"
+                f"Описание: {ex.get('description', '')}\n"
+                f"Вход: {ex.get('input_params', '')}\n"
+                f"Объект: {ex.get('object', '')}\n"
+                f"Выход: {ex.get('output_params', '')}\n"
+            )
+
+        return "\n".join(parts)
+
+    def build_prompts(self, query_text: str, examples_context: str):
+
+        system_prompt = (
+            "Ты — эксперт по физике и анализу патентов. "
+            "Твоя задача — извлечь структуру физического эффекта из текста патента "
+            "в формате базы данных FEText.\n\n"
+            "Физический эффект: входное физическое воздействие → объект → выходная физическая величина.\n\n"
+
+            "ФОРМАТ ПОЛЕЙ:\n\n"
+
+            "input_params — входное физическое воздействие. Структура записи:\n"
+            "  [Вид воздействия]. [Характеристика]. [Название физической величины] ([единицы]).\n"
+            "  Если входов несколько — формат: Вход1:[запись1] Вход2:[запись2]\n\n"
+
+            "object — физический объект или среда, на которую оказывается воздействие.\n"
+            "  [Тип материала или среды], [конкретизация если принципиальна].\n\n"
+
+            "output_params — выходная физическая величина или явление. Структура записи:\n"
+            "  [Название величины или явления] ([единицы]). [Направление изменения].\n\n"
+
+            "ПРАВИЛА ИЗВЛЕЧЕНИЯ:\n"
+            "- Единицы измерения — обязательная часть записи, указывай в скобках\n"
+            "- Характеристику воздействия включай если она принципиальна для эффекта "
+            "(переменное/постоянное, линейно-поляризованное, монохроматическое и т.п.)\n"
+            "- Направление изменения выхода (Увеличение/Уменьшение) включай если явно указано\n"
+            "- Извлекай физическую суть эффекта, а не описание прибора или установки\n"
+            "- Если в тексте упоминается известный физический эффект (эффект Фарадея, "
+            "Керра, скин-эффект и т.д.) — извлекай именно его структуру\n"
+            "- Вход и выход должны быть физически причинно-следственно связаны\n"
+            "- Ориентируйся на разделы «технический результат» и «принцип действия», "
+            "а не на описание конструкции\n"
+            "- НЕ включай: названия приборов, алгоритмы обработки сигнала, "
+            "описание экспериментальной установки\n"
+            "- Пример из базы приведён только для понимания формата записи — "
+            "НЕ копируй его содержание, извлекай из текста патента\n"
+            "- Пиши слова раздельно, не сливай их: «Энергия фотона», а не «Энергияфотона»\n"
+            "- Перед скобками с единицами всегда пробел: «Длина волны (нм)», а не «Длина волны(нм)»\n"
+            "- После точки внутри строки — заглавная буква: «Излучение. Монохроматическое.»\n"
+            "- Верни строго один JSON-объект, без пояснений, без markdown\n"
+        )
+
+        user_prompt = (
+            "ПРИМЕР ФОРМАТА ЗАПИСИ из базы физических эффектов\n"
+            "(только для понимания структуры — НЕ копируй, содержание извлекай из текста патента):\n"
+            f"{examples_context}\n\n"
+            "---\n\n"
+            "ЗАДАЧА — извлеки физический эффект из текста патента ниже:\n\n"
+            f"{query_text}\n\n"
+            "Верни JSON только для данного текста патента:\n"
+            "{\n"
+            '  "input_params": "...",\n'
+            '  "object": "...",\n'
+            '  "output_params": "..."\n'
+            "}\n"
+        )
+        return system_prompt, user_prompt
+
+    @staticmethod
+    def _extract_json_object(text: str) -> dict | None:
+        if not text:
+            return None
+
+        text = text.strip()
+        text = re.sub(r"```json", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"```", "", text)
+        text = text.strip()
+
+        candidates = []
+        start = 0
+        while True:
+            pos = text.find("{", start)
+            if pos == -1:
+                break
+            brace_count = 0
+            end = -1
+            for i in range(pos, len(text)):
+                if text[i] == "{":
+                    brace_count += 1
+                elif text[i] == "}":
+                    brace_count -= 1
+                    if brace_count == 0:
+                        end = i
+                        break
+            if end != -1:
+                candidate = text[pos:end + 1].strip()
+                try:
+                    parsed = json.loads(candidate)
+                    if isinstance(parsed, dict):
+                        candidates.append(parsed)
+                except json.JSONDecodeError:
+                    try:
+                        parsed = json.loads(candidate.replace("'", '"'))
+                        if isinstance(parsed, dict):
+                            candidates.append(parsed)
+                    except json.JSONDecodeError:
+                        pass
+            start = pos + 1
+
+        for c in candidates:
+            if "raw_inputs" in c or "raw_outputs" in c or "input_params" in c or "output_params" in c:
+                return c
+
+        if candidates:
+            return candidates[0]
+
+        return None
+
+    @staticmethod
+    def _normalize_list(value) -> list[str]:
+        if value is None:
+            return []
+
+        if isinstance(value, list):
+            return [str(x).strip() for x in value if str(x).strip()]
+
+        if isinstance(value, str):
+            value = value.strip()
+            return [value] if value else []
+
+        return [str(value).strip()]
+
+    def _postprocess_raw_result(self, result: dict) -> dict:
+        def clean_list(values):
+            out = []
+            seen = set()
+            for v in values or []:
+                text = str(v).strip()
+                if not text:
+                    continue
+                key = text.lower()
+                if key not in seen:
+                    out.append(text)
+                    seen.add(key)
+            return out
+
+        raw_inputs = clean_list(result.get("raw_inputs", []))
+        raw_outputs = clean_list(result.get("raw_outputs", []))
+        input_modifiers = clean_list(result.get("input_modifiers", []))
+        output_modifiers = clean_list(result.get("output_modifiers", []))
+        conditions = clean_list(result.get("conditions", []))
+        raw_object = str(result.get("raw_object", "")).strip()
+
+        bad_output_words = {"изменение", "образование", "происхождение", "процесс", "эффект"}
+        raw_outputs = [x for x in raw_outputs if x.lower() not in bad_output_words]
+
+        return {
+            "raw_inputs": raw_inputs,
+            "raw_object": raw_object,
+            "raw_outputs": raw_outputs,
+            "input_modifiers": input_modifiers,
+            "output_modifiers": output_modifiers,
+            "conditions": conditions
+        }
+
+    def extract(self, query_text: str, retrieved_examples: list[dict]) -> dict:
+        examples_context = self.build_examples_context(retrieved_examples)
+        system_prompt, user_prompt = self.build_prompts(query_text, examples_context)
+
+        lm_response = self.lm_client.chat_optional(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=0.0,
+            max_tokens=2000
+        )
+
+        if not lm_response:
+            return {
+                "status": "error",
+                "message": "LM Studio не вернул ответ"
+            }
+
+        parsed = self._extract_json_object(lm_response)
+
+        if parsed is None:
+            return {
+                "status": "error",
+                "message": "Ответ модели не удалось распарсить как JSON",
+                "raw_response": lm_response
+            }
+
+        input_val  = str(parsed.get("input_params",  "") or "").strip()
+        object_val = str(parsed.get("object",        "") or "").strip()
+        output_val = str(parsed.get("output_params", "") or "").strip()
+
+        if re.search(r'Вход\d+[:.]\s*', input_val):
+            raw_inputs = [p.strip() for p in re.split(r'Вход\d+[:.]\s*', input_val) if p.strip()]
+        else:
+            raw_inputs = [input_val] if input_val else []
+
+        raw_result = {
+            "raw_inputs":       raw_inputs,
+            "raw_object":       object_val,
+            "raw_outputs":      [output_val] if output_val else [],
+            "input_modifiers":  [],
+            "output_modifiers": [],
+            "conditions":       []
+        }
+
+        raw_result = self._postprocess_raw_result(raw_result)
+
+        logging.info(f"raw_result перед возвратом: {raw_result}")
+        return {
+            "status": "ok",
+            "result": raw_result
+        }
+
+```
+
+===== ./src/run_pipeline.py =====
+```python
+import logging
+
+from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
+from retriever import FERetriever
+from thesaurus_match import ThesaurusMatcher
+from raw_extractor import RawExtractor
+from normalizer import Normalizer
+from verifier import Verifier
+from thesaurus_normalizer import ThesaurusNormalizer
+from fetext_formatter import FETextFormatter
+from text_preprocessor import normalize_text
+
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+class RAGPipeline:
+    def __init__(
+        self,
+        lm_studio_url: str = LM_STUDIO_URL,
+        model_id: str = LM_STUDIO_MODEL_ID
+    ):
+        self.retriever = FERetriever()
+        self.thesaurus_matcher = ThesaurusMatcher()
+        self.thesaurus_normalizer = ThesaurusNormalizer(self.thesaurus_matcher)
+        self.fetext_formatter = FETextFormatter(self.thesaurus_matcher)
+        self.raw_extractor = RawExtractor(
+            lm_studio_url=lm_studio_url,
+            model_id=model_id
+        )
+        self.normalizer = Normalizer()
+        self.verifier = Verifier()
+
+    def run(self, query_text: str) -> dict:
+        query_text = normalize_text(query_text.strip())
+
+        if not query_text:
+            return {
+                "status": "error",
+                "message": "Пустой входной текст"
+            }
+
+        example_bundle = self.retriever.get_example_bundle(query_text, main_k=1, aux_k=0)
+        retrieved_examples = []
+        if example_bundle["main_example"]:
+            retrieved_examples.append(example_bundle["main_example"])
+        retrieved_examples.extend(example_bundle["aux_examples"])
+
+        raw_extraction = self.raw_extractor.extract(
+            query_text=query_text,
+            retrieved_examples=retrieved_examples
+        )
+
+        if raw_extraction.get("status") != "ok":
+            return {
+                "status": "error",
+                "stage": "raw_extraction",
+                "message": raw_extraction.get("message", "ошибка"),
+                "debug": {
+                    "raw_response": raw_extraction.get("raw_response", ""),
+                    "retrieved_examples": retrieved_examples
+                }
+            }
+
+        raw_result = raw_extraction["result"]
+
+        thesaurus_candidates = self.thesaurus_normalizer.normalize_raw_result(raw_result)
+
+        normalization = self.normalizer.normalize(
+            raw_result=raw_result,
+            thesaurus_candidates=thesaurus_candidates
+        )
+
+        if normalization.get("status") != "ok":
+            return {
+                "status": "error",
+                "stage": "normalization",
+                "message": normalization.get("message", "ошибка нормализации"),
+                "debug": {
+                    "raw_result": raw_result,
+                    "thesaurus_candidates": thesaurus_candidates
+                }
+            }
+
+        normalized_result = normalization["result"]
+
+        formatted_result = self.fetext_formatter.format_fields(
+            input_params=normalized_result.get("input_params", ""),
+            object_text=normalized_result.get("object", ""),
+            output_params=normalized_result.get("output_params", "")
+        )
+
+        verified = self.verifier.verify(formatted_result)
+
+        return {
+            "status": "ok",
+            "source": "llm",
+            "result": verified["result"],
+            "verification": {
+                "is_valid": verified["is_valid"],
+                "issues": verified["issues"],
+                "warnings": verified["warnings"],
+                "stats": verified["stats"]
+            },
+            "debug": {
+                "raw_result": raw_result,
+                "retrieved_examples": retrieved_examples,
+                "thesaurus_candidates": thesaurus_candidates,
+                "normalized_result": normalized_result,
+                "formatted_result": formatted_result
+            }
+        }
+```
+
+===== ./src/text_preprocessor.py =====
+```python
+import re
+import unicodedata
+
+
+LATIN_TO_CYRILLIC = {
+    'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н',
+    'K': 'К', 'M': 'М', 'O': 'О', 'P': 'Р', 'T': 'Т',
+    'X': 'Х', 'Y': 'У',
+    'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р',
+    'x': 'х', 'y': 'у',
+}
+
+
+def fix_mixed_script(text: str) -> str:
+    def fix_word(word: str) -> str:
+        has_cyrillic = any('\u0400' <= c <= '\u04ff' for c in word)
+        has_latin_lookalike = any(c in LATIN_TO_CYRILLIC for c in word)
+
+        if has_cyrillic and has_latin_lookalike:
+            return ''.join(LATIN_TO_CYRILLIC.get(c, c) for c in word)
+        return word
+
+    tokens = re.split(r'(\s+|[^\w])', text)
+    return ''.join(fix_word(t) for t in tokens)
+
+
+def normalize_text(text: str) -> str:
+    if not text:
+        return text
+
+    text = re.sub(r'^[─\-\s]*\[\d+\][^\n]*\n', '', text).strip()
+
+    text = fix_mixed_script(text)
+
+    text = re.sub(r'[ \t]+', ' ', text)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+
+    return text.strip()
+
+
+if __name__ == "__main__":
+    test_cases = [
+        "Koнцeнтpaция блaгopoднoгo мeтaллa",
+        "Teмпepaтypa (C). Увeличeниe oт -50 дo +50 C.",
+        "Cилoвoe (мexaничecкoe) вoздeйcтвиe",
+        "Удeльнoe элeктpocoпpoтивлeниe (Oм*м)",
+    ]
+    for t in test_cases:
+        print(f"до:   {t}")
+        print(f"после: {normalize_text(t)}")
+        print()```
+
+===== ./src/debug_pipeline.py =====
+```python
+from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
+from run_pipeline import RAGPipeline
+
+
+TEST_TEXTS = [
+    """Структура аморфных сплавов очень чувствительна к термической обработке. Кристаллизация, структурная релаксация, фазовый распад вызывают значительную перестройку атомной структуры и существенное изменение свойств. Эти процессы можно контролировать диффузией атомов в аморфном твердом теле. При полной кристаллизации сплава Fe(40)Ni(40)P(14)B(6) после отжига обнаружено значительное замедление диффузии фосфора и железа, а в сплаве Ni(33,3)Zr(66,7) значительное ускорение диффузии атомов пластины. При частичной кристаллизации изменения коэффициента диффузии серебра в сплаве Pd(81)Si(19) и кремния в Fe(82)B(12)Si(6) не обнаружены.""",
+
+    """В данной технологии сплав,который необходимо получить в виде аморфного порошка,используется в качестве электродов.Порошок образуется в каждом акте электрического разряда,во время которого малая часть электродов или плавится или испаряется и выбрасывается в окружающий диэлектрик,в котором происходит закаливание.Размеры частиц аморфного порошка,закаленного в додекане,например,имеющем наивысшую температуру испарения и скорость охлаждения колеблются от 5*10**-5 до 5*10**-7 м,а скорость охлаждения для частиц размером 2*10**-5 м превышает 10**6К/с и приближается к 10**9К/с для частиц 5*10**-6м.Методом искровой эрозии получено много аморфных ферромагнитных порошков.""",
+
+]
+
+
+def main():
+    print("загружаем пайплайн...")
+    pipeline = RAGPipeline(
+        lm_studio_url=LM_STUDIO_URL,
+        model_id=LM_STUDIO_MODEL_ID
+    )
+    print("пайплайн готов\n")
+
+    for i, text in enumerate(TEST_TEXTS, start=1):
+        print(f"\n{'#' * 70}")
+        print(f"# тест {i}/{len(TEST_TEXTS)}")
+        print(f"{'#' * 70}")
+        print(f"исходный текст: {text[:120]}...\n")
+
+        result = pipeline.run(text)
+
+        print(f"\n>>> ИТОГОВЫЙ ВЫВОД <<<")
+        if result.get("status") == "ok":
+            r = result.get("result", {})
+            print(f"  source: {result.get('source', '')}")
+            print(f"  Вход:   {r.get('input_params', '')}")
+            print(f"  Объект: {r.get('object', '')}")
+            print(f"  Выход:  {r.get('output_params', '')}")
+        else:
+            print(f"  ошибка: {result.get('message', '')}")
+        print()
+
+
+if __name__ == "__main__":
+    main()```
+
+===== ./src/batch_run.py =====
+```python
+
+import re
+import logging
+import warnings
+from text_preprocessor import normalize_text
+from pathlib import Path
+
+warnings.filterwarnings("ignore")
+try:
+    from transformers.utils import logging as tl; tl.set_verbosity_error()
+except Exception: pass
+logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
+
+from run_pipeline import RAGPipeline
+
+texts_path = Path(__file__).parent.parent / "data" / "patents_40_texts.txt"
+content = texts_path.read_text(encoding="utf-8")
+ALL_TEXTS = [p.strip() for p in content.split("\n\n") if p.strip()]
+
+CHECK_IDS = [16, 17, 20, 22]
+TEXTS = [(ALL_TEXTS[i-1], i) for i in CHECK_IDS]
+
+def prettify_input(text: str) -> str:
+    parts = re.split(r"Вход\d+:\s*", str(text or "").strip())
+    return "; ".join(p.strip(" .") for p in parts if p.strip())
+
+
+pipeline = RAGPipeline()
+
+for raw_text, orig_id in TEXTS:
+    text = raw_text.strip()
+    text = normalize_text(text)
+
+    print(f"\n{'='*60}")
+    print(f"[id={orig_id}] {text.split(chr(10))[0][:60]}")
+    print('='*60)
+
+    if not text:
+        continue
+
+    try:
+        result = pipeline.run(text)
+    except Exception as e:
+        import traceback
+
+        print(f"ошибка исключение: {e}")
+        traceback.print_exc()
+        continue
+
+    if result is None:
+        print("ошибка: pipeline вернул None")
+        continue
+
+    if result.get("status") == "ok":
+        r = result["result"]
+        print(f"вход:   {prettify_input(r.get('input_params', ''))}")
+        print(f"объект: {r.get('object', '')}")
+        print(f"выход:  {r.get('output_params', '')}")
+    else:
+        print(f"ошибка: {result.get('message', '???')}")
+        print(f"стадия: {result.get('stage', '???')}")```
+
+===== ./src/normalizer.py =====
+```python
+import re
+
+
+class Normalizer:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def _clean(text: str) -> str:
+        text = str(text or "").strip()
+        text = re.sub(r"\s+", " ", text)
+        return text
+
+    @staticmethod
+    def _cap(text: str) -> str:
+        text = str(text or "").strip()
+        if not text:
+            return ""
+        if text.isupper():
+            text = text.lower()
+        return text[0].upper() + text[1:]
+
+    @staticmethod
+    def _dedup(items: list[str]) -> list[str]:
+        result = []
+        seen = set()
+        for item in items:
+            item = str(item).strip()
+            if not item:
+                continue
+            key = item.lower()
+            if key not in seen:
+                result.append(item)
+                seen.add(key)
+        return result
+
+    @staticmethod
+    def _canonicalize_input_for_dedup(text: str) -> str:
+        t = str(text or "").strip().lower()
+        t = re.sub(r"\s+", " ", t)
+        if "магнит" in t and "пол" in t:
+            return "магнитное поле"
+        if "электр" in t and "пол" in t:
+            return "электрическое поле"
+        if "лазер" in t and "излуч" in t:
+            return "лазерное излучение"
+        if "ультразв" in t:
+            return "ультразвук"
+        if "давлен" in t:
+            return "давление"
+        if (
+            "механическ" in t
+            or "силов" in t
+            or "нагруж" in t
+            or "нагруз" in t
+            or "растяж" in t
+            or "сжат" in t
+            or "сдвиг" in t
+            or "изгиб" in t
+        ):
+            return "механическое воздействие"
+        return t
+
+    @staticmethod
+    def _canonicalize_output_modifier(mod: str) -> str:
+        mod_low = mod.lower().strip()
+        if any(x in mod_low for x in ["повыш", "увелич", "возраст", "усилен", "ускорен"]):
+            return "Увеличение"
+        if any(x in mod_low for x in ["сниж", "уменьш", "пада", "ослаб", "замедлен"]):
+            return "Уменьшение"
+        generic_patterns = [
+            r"^изменени\w*$",
+            r"^образовани\w*$",
+            r"^возникновени\w*$",
+            r"^происхождени\w*$",
+            r"^наличие$",
+            r"^процесс$",
+            r"^эффект$",
+        ]
+        if any(re.match(pattern, mod_low) for pattern in generic_patterns):
+            return ""
+        return mod.capitalize() if mod else ""
+
+    @staticmethod
+    def _is_parameter_like(text: str) -> bool:
+        text_low = text.lower()
+
+        parameter_patterns = [
+            r"\bдлительност\w+\s+импульс\w*\b",
+            r"\bинтенсивност\w+\s+лазер\w*\b",
+            r"\bмощност\w+\s+лазер\w*\b",
+            r"\bплотност\w+\s+энерги\w*\b",
+            r"\bамплитуд\w+\s+колебан\w*\b",
+        ]
+        return any(re.search(p, text_low) for p in parameter_patterns)
+
+    @staticmethod
+    def _is_condition_like(text: str) -> bool:
+        text_low = text.lower()
+        condition_markers = [
+            "в зависимости",
+            "после ",
+            "до ",
+            "если ",
+            "в условиях ",
+            "в области ",
+            "определяется ",
+            "зависит ",
+            "может ",
+            "возможно ",
+            "например",
+        ]
+        return any(marker in text_low for marker in condition_markers)
+
+    @staticmethod
+    def _is_generic_process_word(text: str) -> bool:
+        text_low = text.lower().strip()
+        generic_patterns = [
+            r"^изменени\w*$",
+            r"^образовани\w*$",
+            r"^возникновени\w*$",
+            r"^происхождени\w*$",
+            r"^наличие$",
+            r"^процесс$",
+            r"^эффект$",
+        ]
+        return any(re.match(pattern, text_low) for pattern in generic_patterns)
+
+    def _normalize_output_core(self, text: str) -> str:
+        t = str(text or "").strip()
+        t_low = t.lower()
+
+        if re.search(r"\([^)]{1,40}\)", t) and re.search(
+                r"(па|вт|дж|ом|гц|кг|м\*\*|к\*\*|м/с|а/м|нм|мм|%|кл)", t_low
+        ):
+            result = t.strip().capitalize() if t else t
+            return self._fix_units_case(result)
+
+        if re.search(r"\bостаточн\w*\s+деформ\w*\b", t_low):
+            return "Остаточная деформация"
+        if re.search(r"\bпластическ\w*\s+деформ\w*\b", t_low):
+            return "Пластическая деформация"
+        if re.search(r"\bдеформир\w*\b|\bдеформирован\w*\b", t_low):
+            return "Пластическая деформация"
+        if re.search(r"\bразупрочнен\w*\b", t_low):
+            return "Разупрочнение"
+        if re.search(r"\bэрози\w*\b", t_low):
+            return "Эрозия"
+        if re.search(r"\bкавитац\w*\b", t_low):
+            return "Кавитация"
+        if re.search(r"\bзакалк\w*\b", t_low):
+            return "Закалка"
+        if re.search(r"\bизменени\w+\s+структур\w*\b|\bмикроструктур\w*\b", t_low):
+            return "Изменение структуры"
+        if re.search(r"\bнагрев\w*\b|\bнагрет\w*\b", t_low):
+            return "Нагрев"
+        if re.search(r"\bплавлен\w*\b", t_low):
+            return "Плавление"
+        if re.search(r"\bиспарен\w*\b", t_low):
+            return "Испарение"
+        if re.search(r"\bфазов\w*\s+переход\w*\b", t_low):
+            return "Фазовый переход"
+        if re.search(r"\bплазм\w*\b", t_low):
+            return "Образование плазмы"
+        if re.search(r"\bэлектрическ\w*\s+ток\b|\bток\b", t_low):
+            return "Электрический ток"
+        if re.search(r"\bполяризац\w*\b", t_low):
+            return "Поляризация"
+        if re.search(r"\bмагнитн\w+\s+проницаемост\w*\b", t_low):
+            return "Магнитная проницаемость"
+        if re.search(r"\bэлектрическ\w+\s+сопротивлен\w*\b", t_low):
+            return "Электрическое сопротивление"
+        if re.search(r"\bпроводимост\w*\b", t_low):
+            return "Проводимость"
+        if re.search(r"\bтемператур\w*\b", t_low):
+            return "Температура"
+        if re.search(r"\bдавлен\w*\b", t_low):
+            return "Давление"
+
+        result = t.strip() if t[0].isupper() else t.strip().capitalize()
+        return self._fix_units_case(result)
+
+    def _fix_units_case(self, text: str) -> str:
+        fixes = [
+            (r'\bвт\b', 'Вт'), (r'\bдж\b', 'Дж'), (r'\bпа\b', 'Па'),
+            (r'\bгц\b', 'Гц'), (r'\bом\b', 'Ом'), (r'\bкг\b', 'кг'),
+            (r'\bк\*\*', 'К**'), (r'\bм\*\*', 'м**'), (r'\bа/м', 'А/м'),
+        ]
+        for pattern, replacement in fixes:
+            text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+        return text
+
+    @staticmethod
+    def _looks_like_valid_output(text: str) -> bool:
+        t = str(text or "").strip().lower()
+        if not t:
+            return False
+        bad_patterns = [
+            r"ющ\.*$",
+            r"ащ\.*$",
+            r"ивш\.*$",
+            r"ующ\.*$",
+            r"вш\.*$",
+        ]
+        if any(re.search(p, t) for p in bad_patterns):
+            return False
+        if len(t) < 4:
+            return False
+        return True
+
+    def _dedup_inputs_semantically(self, inputs: list[str]) -> list[str]:
+        result = []
+        seen = set()
+        for item in inputs:
+            clean_item = self._clean(item)
+            if not clean_item:
+                continue
+            canon = self._canonicalize_input_for_dedup(clean_item)
+            if canon not in seen:
+                result.append(clean_item)
+                seen.add(canon)
+        return result
+
+    @staticmethod
+    def _remove_output_stage_chains(outputs: list[str], conditions: list[str]) -> list[str]:
+        lowered = {x.lower(): x for x in outputs}
+        has_melting = "плавление" in lowered
+        has_phase = "фазовый переход" in lowered
+        has_plasma = "образование плазмы" in lowered
+        result = outputs[:]
+        if has_melting and has_phase:
+            result = [x for x in result if x.lower() != "фазовый переход"]
+        cond_text = " ".join(conditions).lower()
+        if has_plasma and ("испарен" in cond_text or "при дальнейшем увеличении энергии" in cond_text):
+            result = [x for x in result if x.lower() != "образование плазмы"]
+        return result
+
+    def _filter_inputs(self, raw_inputs: list[str], normalized_inputs: list[dict]) -> list[str]:
+        result = []
+        for idx, raw in enumerate(raw_inputs):
+            raw = self._clean(raw)
+            if not raw:
+                continue
+
+            raw_low = raw.lower()
+            if re.match(r"^изменение\s+параметр\w*", raw_low):
+                continue
+            if re.match(r"^параметрическ\w+", raw_low):
+                continue
+            if re.match(r"^(увеличение|уменьшение|снижение|повышение|рост)\b", raw_low):
+                continue
+
+            if self._is_parameter_like(raw):
+                continue
+            if self._is_condition_like(raw):
+                continue
+
+            thes = normalized_inputs[idx] if idx < len(normalized_inputs) else None
+            if thes and thes.get("source") != "raw" and thes.get("canonical_text"):
+                candidate = self._cap(thes["canonical_text"])
+            else:
+                candidate = self._cap(raw)
+
+            candidate = self._fix_units_case(candidate)
+            result.append(candidate)
+
+        return self._dedup_inputs_semantically(result)
+
+    def _filter_outputs(self, raw_outputs: list[str], normalized_outputs: list[dict], conditions: list[str]) -> list[str]:
+        result = []
+        for idx, raw in enumerate(raw_outputs):
+            raw = self._clean(raw)
+            if not raw:
+                continue
+
+            if self._is_parameter_like(raw):
+                continue
+            if self._is_condition_like(raw):
+                continue
+            if self._is_generic_process_word(raw):
+                continue
+
+            thes = normalized_outputs[idx] if idx < len(normalized_outputs) else None
+            if thes and thes.get("source") != "raw" and thes.get("canonical_text"):
+                candidate = self._cap(thes["canonical_text"])
+            else:
+                candidate = self._normalize_output_core(raw)
+
+            if not self._looks_like_valid_output(candidate):
+                continue
+
+            result.append(candidate)
+
+        result = self._dedup(result)
+        result = self._remove_output_stage_chains(result, conditions)
+        result = self._dedup(result)
+
+        if result:
+            return result
+
+        fallback = []
+        for raw in raw_outputs:
+            raw = self._clean(raw)
+            if not raw:
+                continue
+            candidate = self._normalize_output_core(raw)
+            if self._is_generic_process_word(candidate):
+                continue
+            if self._is_parameter_like(candidate):
+                continue
+            fallback.append(candidate)
+
+        return self._dedup(fallback)
+
+    def _filter_object(self, raw_object: str, normalized_object: dict | None) -> str:
+        raw_object = self._clean(raw_object)
+
+        if normalized_object:
+            candidate = self._clean(normalized_object.get("canonical_text", raw_object))
+        else:
+            candidate = raw_object
+
+        candidate = self._cap(candidate)
+
+        if self._is_parameter_like(candidate):
+            return raw_object
+
+        return candidate
+
+    def _format_inputs_fetext(self, inputs: list[str]) -> str:
+        if not inputs:
+            return ""
+
+        if len(inputs) == 1:
+            return inputs[0].strip()
+
+        parts = []
+        for idx, item in enumerate(inputs, start=1):
+            parts.append(f"Вход{idx}:{item}")
+        return " ".join(parts).strip()
+
+    def _format_outputs_fetext(self, outputs: list[str]) -> str:
+        if not outputs:
+            return ""
+        return ". ".join(outputs).strip()
+
+    def normalize(
+            self,
+            raw_result: dict,
+            thesaurus_candidates: dict
+    ) -> dict:
+        raw_inputs = raw_result.get("raw_inputs", []) or []
+        raw_outputs = raw_result.get("raw_outputs", []) or []
+        raw_object = raw_result.get("raw_object", "") or ""
+        conditions = raw_result.get("conditions", []) or []
+
+        normalized_inputs = thesaurus_candidates.get("inputs", []) or []
+        normalized_outputs = thesaurus_candidates.get("outputs", []) or []
+        normalized_object = thesaurus_candidates.get("object")
+
+        final_inputs = self._filter_inputs(raw_inputs, normalized_inputs)
+        final_inputs = self._dedup_inputs_semantically(final_inputs)
+
+        final_outputs = self._filter_outputs(raw_outputs, normalized_outputs, conditions)
+
+        final_object = self._filter_object(raw_object, normalized_object)
+
+        return {
+            "status": "ok",
+            "result": {
+                "input_params": self._format_inputs_fetext(final_inputs),
+                "object": final_object,
+                "output_params": self._format_outputs_fetext(final_outputs),
+            }
+        }```
+
+===== ./src/thesaurus_normalizer.py =====
+```python
+import re
+from thesaurus_match import ThesaurusMatcher
+
+
+class ThesaurusNormalizer:
+    def __init__(self, matcher: ThesaurusMatcher):
+        self.matcher = matcher
+
+        self.input_alias_rules = [
+            (r"\bмагнит\w*\s+пол\w*\b", "Магнитное поле"),
+            (r"\bэлектр\w*\s+пол\w*\b", "Электрическое поле"),
+            (r"\bлазер\w*\s+излуч\w*\b", "Лазерное излучение"),
+            (r"\bсвет\b|\bсветов\w*\b", "Свет"),
+            (r"\bультразв\w*\b", "Ультразвук"),
+            (
+                r"\bнагружен\w*\b|\bнагруз\w*\b|\bмеханическ\w*\b|\bсжат\w*\b|\bрастяжен\w*\b|\bсдвиг\w*\b|\bизгиб\w*\b",
+                "Механическое воздействие"
+            ),
+            (r"\bвысок\w*\s+давлен\w*\b", "Силовое (механическое) воздействие"),
+        ]
+
+        self.output_alias_rules = [
+            (r"\bпластическ\w*\s+деформ\w*\b", "Пластическая деформация"),
+            (r"\bразупрочнен\w*\b", "Разупрочнение"),
+            (r"\bэлектрическ\w*\s+ток\b|\bток\b", "Электрический ток"),
+            (r"\bнагрев\w*\b", "Нагрев"),
+            (r"\bплавлен\w*\b", "Плавление"),
+            (r"\bиспарен\w*\b", "Испарение"),
+            (r"\bнамагниченн\w*\b", "Намагниченность"),
+            (r"\bполяризац\w*\b", "Поляризация"),
+            (r"\bсмещени\w*\b", "Электрическое смещение"),
+            (r"\bкавитац\w*\b", "Кавитация"),
+            (r"\bфазов\w*\s+переход\w*\b", "Фазовый переход"),
+            (r"\bплазм\w*\b", "Образование плазмы"),
+        ]
+
+        self.object_alias_rules = [
+            (r"\bпроводящ\w*\s+сред\w*\b", "Проводящая среда"),
+            (r"\bпроводник\w*\b", "Проводник"),
+        ]
+
+    @staticmethod
+    def _normalize_to_list(value) -> list[str]:
+        if value is None:
+            return []
+
+        if isinstance(value, list):
+            return [str(x).strip() for x in value if str(x).strip()]
+
+        if isinstance(value, str):
+            value = value.strip()
+            return [value] if value else []
+
+        return [str(value).strip()]
+
+    @staticmethod
+    def _clean(text: str) -> str:
+        return str(text or "").strip()
+
+    def _apply_alias_rules(self, text: str, rules: list[tuple[str, str]]) -> str | None:
+        text_low = self._clean(text).lower()
+
+        for pattern, canonical in rules:
+            if re.search(pattern, text_low, flags=re.IGNORECASE):
+                return canonical
+
+        return None
+
+    def _pick_candidate(self, raw_text: str, role: str) -> dict | None:
+        result = self.matcher.find_best(raw_text, top_k=5, role=role)
+
+        exact = result.get("exact_match")
+        if exact:
+            return {
+                "raw": raw_text,
+                "candidate": exact,
+                "canonical_text": exact.get("name", raw_text),
+                "source": "thesaurus_exact"
+            }
+
+        semantic = self.matcher._pick_semantic_candidate(result.get("similar", []), role=role)
+        if semantic:
+            return {
+                "raw": raw_text,
+                "candidate": semantic,
+                "canonical_text": semantic.get("name", raw_text),
+                "source": "thesaurus_semantic"
+            }
+
+        return None
+
+    def _normalize_input(self, raw_input: str) -> dict:
+        raw_input = self._clean(raw_input)
+
+        alias = self._apply_alias_rules(raw_input, self.input_alias_rules)
+        if alias:
+            return {
+                "raw": raw_input,
+                "candidate": alias,
+                "canonical_text": alias,
+                "source": "alias"
+            }
+
+        picked = self._pick_candidate(raw_input, role="input")
+        if picked:
+            return picked
+
+        return {
+            "raw": raw_input,
+            "candidate": None,
+            "canonical_text": raw_input,
+            "source": "raw"
+        }
+
+    def _normalize_object(self, raw_object: str) -> dict | None:
+        import re
+        raw_object_clean = str(raw_object or "").strip()
+        if not raw_object_clean:
+            return None
+
+        has_formula = bool(re.search(
+            r"\b(Fe|Co|Ni|Si|B|P|Mo|Cr|Zr|Ti|Al|Cu|Mn|Nb|W|Gd|Dy|Ho|Au|Pd|Pt)\b",
+            raw_object_clean
+        ))
+        if has_formula:
+            return {
+                "raw": raw_object_clean,
+                "candidate": None,
+                "canonical_text": raw_object_clean,
+                "source": "raw_formula"
+            }
+
+        alias = self._apply_alias_rules(raw_object_clean, self.object_alias_rules)
+        if alias:
+            return {
+                "raw": raw_object_clean,
+                "candidate": alias,
+                "canonical_text": alias,
+                "source": "alias"
+            }
+
+        picked = self._pick_candidate(raw_object_clean, role="object")
+        if picked:
+            return picked
+
+        return {
+            "raw": raw_object_clean,
+            "candidate": None,
+            "canonical_text": raw_object_clean,
+            "source": "raw"
+        }
+
+    def _normalize_output(self, raw_output: str) -> dict:
+        raw_output = self._clean(raw_output)
+
+        alias = self._apply_alias_rules(raw_output, self.output_alias_rules)
+        if alias:
+            return {
+                "raw": raw_output,
+                "candidate": alias,
+                "canonical_text": alias,
+                "source": "alias"
+            }
+
+        picked = self._pick_candidate(raw_output, role="output")
+        if picked:
+            return picked
+
+        return {
+            "raw": raw_output,
+            "candidate": None,
+            "canonical_text": raw_output,
+            "source": "raw"
+        }
+
+    def normalize_raw_result(self, raw_result: dict) -> dict:
+        raw_inputs = self._normalize_to_list(raw_result.get("raw_inputs", []))
+        raw_object = self._clean(raw_result.get("raw_object", ""))
+        raw_outputs = self._normalize_to_list(raw_result.get("raw_outputs", []))
+
+        return {
+            "inputs": [self._normalize_input(x) for x in raw_inputs],
+            "object": self._normalize_object(raw_object),
+            "outputs": [self._normalize_output(x) for x in raw_outputs],
+        }
+```
+
+===== ./src/main.py =====
+```python
+import logging
+import re
+import warnings
+import threading
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import csv
+import json
+from datetime import datetime
+
+warnings.filterwarnings("ignore")
+
+try:
+    from transformers.utils import logging as tl; tl.set_verbosity_error()
+except Exception:
+    pass
+
+logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
+logging.getLogger("urllib3").setLevel(logging.ERROR)
+logging.getLogger("httpx").setLevel(logging.ERROR)
+logging.getLogger("httpcore").setLevel(logging.ERROR)
+logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
+
+from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID, KEYT5_MODEL_PATH
+from run_pipeline import RAGPipeline
+from tech_function_extractor import TechFunctionExtractor
+from text_preprocessor import normalize_text
+
+BG          = "#f5f5f5"
+BG_BOT      = "#e8e8e8"
+BG_USER     = "#1c1c1c"
+BG_INPUT    = "#ffffff"
+BG_SIDE     = "#eeeeee"
+BG_CARD     = "#e2e2e2"
+BG_CARD_HOV = "#d6d6d6"
+FG_BOT      = "#1a1a1a"
+FG_USER     = "#f0f0f0"
+FG_DIM      = "#999999"
+FG_LABEL    = "#666666"
+FG_ERR      = "#cc2222"
+FG_ACCENT   = "#1a1a1a"
+SEP         = "#cccccc"
+BTN_IDLE    = "#1c1c1c"
+BTN_HOV     = "#3a3a3a"
+BTN_DIS     = "#cccccc"
+BTN_TXT_IDLE = "#f5f5f5"
+BTN_TXT_DIS  = "#aaaaaa"
+TAB_ACTIVE   = "#1c1c1c"
+TAB_INACTIVE = "#d8d8d8"
+TAB_TXT_ACT  = "#f5f5f5"
+TAB_TXT_INACT = "#888888"
+CHECK_ON     = "#1c1c1c"
+CHECK_OFF    = "#cccccc"
+RADIUS       = 18
+
+MODE_FE  = "fe"
+MODE_TF  = "tf"
+MODE_ALL = "all"
+
+MODE_LABELS = {
+    MODE_FE:  "Физ. эффект",
+    MODE_TF:  "Тех. функции",
+    MODE_ALL: "Комплексный",
+}
+
+
+def prettify_input_params(text):
+    text = str(text or "").strip()
+    if not text:
+        return ""
+    parts = re.split(r"Вход\d+:\s*", text)
+    return "; ".join(p.strip(" .") for p in parts if p.strip())
+
+
+def draw_rounded_rect(canvas, x1, y1, x2, y2, r, **kw):
+    pts = [
+        x1 + r, y1, x2 - r, y1,
+        x2, y1, x2, y1 + r,
+        x2, y2 - r, x2, y2,
+        x2 - r, y2, x1 + r, y2,
+        x1, y2, x1, y2 - r,
+        x1, y1 + r, x1, y1,
+        x1 + r, y1,
+    ]
+    return canvas.create_polygon(pts, smooth=True, **kw)
+
+
+class RoundedBubble(tk.Canvas):
+    def __init__(self, parent, text, bg_bubble, fg_text, max_wrap, font, **kw):
+        super().__init__(parent, bg=BG, highlightthickness=0, bd=0, **kw)
+        self._bg = bg_bubble
+        self._fg = fg_text
+        self._font = font
+        self._wrap = max_wrap
+        self._text = text
+        self._pad = 14
+        self._render()
+
+    def _render(self):
+        self.delete("all")
+        pad = self._pad
+        tmp = tk.Label(self, text=self._text, font=self._font,
+                       wraplength=self._wrap, justify="left")
+        tmp.update_idletasks()
+        tw = tmp.winfo_reqwidth()
+        th = tmp.winfo_reqheight()
+        tmp.destroy()
+
+        w = tw + pad * 2
+        h = th + pad * 2
+        self.configure(width=w, height=h)
+
+        draw_rounded_rect(self, 0, 0, w, h, RADIUS,
+                          fill=self._bg, outline=self._bg)
+        self.create_text(pad, pad, text=self._text, anchor="nw",
+                         fill=self._fg, font=self._font,
+                         width=self._wrap, justify="left")
+
+
+class ChatApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Анализ патентов")
+        self.root.configure(bg=BG)
+        self.root.geometry("1060x720")
+        self.root.minsize(820, 560)
+
+        self.pipeline = None
+        self.tech_extractor = None
+        self.ready = False
+
+        self.current_mode = MODE_ALL
+        self.results = []
+        self.result_checks = {}
+
+        self._build_ui()
+        self._load_models()
+
+    def _build_ui(self):
+        # ── заголовок ──
+        hdr = tk.Frame(self.root, bg=BG, pady=10)
+        hdr.pack(fill="x", padx=20)
+
+        tk.Label(
+            hdr, text="Анализ патентов",
+            bg=BG, fg="#1a1a1a",
+            font=("Helvetica Neue", 16, "bold")
+        ).pack(side="left")
+
+        self.status_lbl = tk.Label(
+            hdr, text="● загрузка...",
+            bg=BG, fg=FG_DIM,
+            font=("Helvetica Neue", 11)
+        )
+        self.status_lbl.pack(side="right")
+
+        self._build_mode_tabs(hdr)
+
+        tk.Frame(self.root, bg=SEP, height=1).pack(fill="x")
+
+        body = tk.Frame(self.root, bg=BG)
+        body.pack(fill="both", expand=True)
+
+        self._build_sidebar(body)
+
+        tk.Frame(body, bg=SEP, width=1).pack(side="left", fill="y")
+
+        self._build_chat(body)
+
+        tk.Frame(self.root, bg=SEP, height=1).pack(fill="x")
+        self._build_input_bar()
+
+    def _build_mode_tabs(self, parent):
+        tabs_frame = tk.Frame(parent, bg=BG)
+        tabs_frame.pack(side="right", padx=(0, 16))
+
+        self.status_lbl.pack_forget()
+
+        self._tab_buttons = {}
+        for mode in [MODE_FE, MODE_TF, MODE_ALL]:
+            btn = tk.Canvas(
+                tabs_frame, width=110, height=28,
+                bg=BG, highlightthickness=0, bd=0
+            )
+            btn.pack(side="left", padx=2)
+            btn.bind("<Button-1>", lambda e, m=mode: self._set_mode(m))
+            self._tab_buttons[mode] = btn
+
+        self.status_lbl.pack(side="right", padx=(16, 0))
+        self._draw_tabs()
+
+    def _draw_tabs(self):
+        for mode, btn in self._tab_buttons.items():
+            btn.delete("all")
+            w, h = 110, 28
+            is_active = (mode == self.current_mode)
+            fill = TAB_ACTIVE if is_active else TAB_INACTIVE
+            fg = TAB_TXT_ACT if is_active else TAB_TXT_INACT
+            draw_rounded_rect(btn, 0, 0, w, h, 14, fill=fill, outline=fill)
+            btn.create_text(w // 2, h // 2, text=MODE_LABELS[mode],
+                            fill=fg, font=("Helvetica Neue", 11, "bold"))
+
+    def _set_mode(self, mode):
+        self.current_mode = mode
+        self._draw_tabs()
+
+    def _build_sidebar(self, parent):
+        self.sidebar = tk.Frame(parent, bg=BG_SIDE, width=240)
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
+
+        side_hdr = tk.Frame(self.sidebar, bg=BG_SIDE, pady=10, padx=12)
+        side_hdr.pack(fill="x")
+        tk.Label(
+            side_hdr, text="История", bg=BG_SIDE, fg="#1a1a1a",
+            font=("Helvetica Neue", 13, "bold")
+        ).pack(side="left")
+
+        self.counter_lbl = tk.Label(
+            side_hdr, text="0", bg=BG_SIDE, fg=FG_DIM,
+            font=("Helvetica Neue", 11)
+        )
+        self.counter_lbl.pack(side="right")
+
+        tk.Frame(self.sidebar, bg=SEP, height=1).pack(fill="x")
+
+        save_frame = tk.Frame(self.sidebar, bg=BG_SIDE, pady=8, padx=8)
+        save_frame.pack(side="bottom", fill="x")
+
+        tk.Frame(self.sidebar, bg=SEP, height=1).pack(side="bottom", fill="x")
+
+        self._make_side_btn(save_frame, "Сохранить выбранные", self._save_selected)
+        self._make_side_btn(save_frame, "Сохранить все", self._save_all)
+
+        self.selected_lbl = tk.Label(
+            save_frame, text="Выбрано: 0", bg=BG_SIDE, fg=FG_DIM,
+            font=("Helvetica Neue", 10)
+        )
+        self.selected_lbl.pack(pady=(4, 0))
+
+        self._cards_canvas = tk.Canvas(
+            self.sidebar, bg=BG_SIDE, highlightthickness=0, bd=0
+        )
+        cards_sb = tk.Scrollbar(
+            self.sidebar, orient="vertical",
+            command=self._cards_canvas.yview,
+            bg=BG_SIDE, troughcolor=BG_SIDE, width=4,
+            relief="flat", bd=0
+        )
+        self._cards_canvas.configure(yscrollcommand=cards_sb.set)
+        cards_sb.pack(side="right", fill="y")
+        self._cards_canvas.pack(side="left", fill="both", expand=True)
+
+        self._cards_frame = tk.Frame(self._cards_canvas, bg=BG_SIDE)
+        self._cards_win = self._cards_canvas.create_window(
+            (0, 0), window=self._cards_frame, anchor="nw"
+        )
+        self._cards_frame.bind(
+            "<Configure>",
+            lambda e: self._cards_canvas.configure(
+                scrollregion=self._cards_canvas.bbox("all")
+            )
+        )
+        self._cards_canvas.bind(
+            "<Configure>",
+            lambda e: self._cards_canvas.itemconfig(self._cards_win, width=e.width)
+        )
+
+    def _make_side_btn(self, parent, text, command):
+        btn = tk.Label(
+            parent, text=text, bg="#d0d0d0", fg="#333333",
+            font=("Helvetica Neue", 11), padx=10, pady=6,
+            cursor="hand2"
+        )
+        btn.pack(fill="x", pady=2)
+        btn.bind("<Button-1>", lambda e: command())
+        btn.bind("<Enter>", lambda e: btn.configure(bg="#bfbfbf"))
+        btn.bind("<Leave>", lambda e: btn.configure(bg="#d0d0d0"))
+
+    def _build_chat(self, parent):
+        wrap = tk.Frame(parent, bg=BG)
+        wrap.pack(side="left", fill="both", expand=True)
+
+        self.canvas = tk.Canvas(wrap, bg=BG, highlightthickness=0, bd=0)
+        sb = tk.Scrollbar(
+            wrap, orient="vertical", command=self.canvas.yview,
+            bg=BG, troughcolor=BG, width=4, relief="flat", bd=0
+        )
+        self.canvas.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        self.msg_frame = tk.Frame(self.canvas, bg=BG)
+        self._win = self.canvas.create_window(
+            (0, 0), window=self.msg_frame, anchor="nw"
+        )
+
+        self.msg_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+        self.canvas.bind(
+            "<Configure>",
+            lambda e: self.canvas.itemconfig(self._win, width=e.width)
+        )
+        self.canvas.bind_all(
+            "<MouseWheel>",
+            lambda e: self.canvas.yview_scroll(int(-1 * (e.delta / 120)), "units")
+        )
+
+        self._bot_bubble(
+            "Вставьте текст патента — я извлеку физические эффекты "
+            "и технические функции.\n\n"
+            "Выберите режим анализа вверху: физ. эффект, "
+            "тех. функции или комплексный.",
+            greeting=True
+        )
+
+    def _build_input_bar(self):
+        bottom = tk.Frame(self.root, bg=BG, pady=10)
+        bottom.pack(fill="x", padx=16, pady=(4, 10))
+
+        self._input_cv = tk.Canvas(
+            bottom, bg=BG, highlightthickness=0, bd=0,
+            relief="flat", height=56
+        )
+        self._input_cv.pack(fill="x", pady=(0, 8))
+
+        self.text_input = tk.Text(
+            self._input_cv, bg=BG_INPUT, fg="#1a1a1a",
+            insertbackground="#333333",
+            font=("Helvetica Neue", 13), relief="flat", bd=0,
+            highlightthickness=0, undo=True, height=2, wrap="word",
+            padx=0, pady=0, selectbackground="#bbbbbb"
+        )
+
+        self._input_cv.create_window(
+            16, 10, window=self.text_input, anchor="nw", tags="entry_win"
+        )
+
+        self._input_cv.bind("<Configure>", self._resize_input)
+        self.text_input.bind("<Return>", self._on_enter)
+        self.text_input.bind("<<Paste>>", self._on_paste)
+        self.text_input.bind("<Command-v>", self._on_paste)
+        self.text_input.bind("<Command-V>", self._on_paste)
+        self.text_input.bind("<Control-v>", self._on_paste)
+        self.text_input.bind("<Control-V>", self._on_paste)
+
+        self.root.bind_all("<Command-v>", self._on_paste_global)
+        self.root.bind_all("<Command-V>", self._on_paste_global)
+        self.root.bind_all("<Control-v>", self._on_paste_global)
+        self.root.bind_all("<Control-V>", self._on_paste_global)
+
+        self.text_input.focus_set()
+
+        btn_row = tk.Frame(bottom, bg=BG)
+        btn_row.pack(fill="x")
+
+        tk.Label(
+            btn_row,
+            text="Enter — отправить  ·  Shift+Enter — новая строка  ·  ⌘V — вставить",
+            bg=BG, fg=FG_DIM, font=("Helvetica Neue", 10)
+        ).pack(side="left")
+
+        paste_btn = tk.Canvas(
+            btn_row, width=100, height=34, bg=BG,
+            highlightthickness=0, bd=0
+        )
+        paste_btn.pack(side="right", padx=(10, 0))
+        draw_rounded_rect(paste_btn, 0, 0, 100, 34, 17,
+                          fill="#d0d0d0", outline="#d0d0d0")
+        paste_btn.create_text(50, 17, text="Вставить",
+                              fill="#1a1a1a", font=("Helvetica Neue", 11, "bold"))
+        paste_btn.bind("<Button-1>", lambda e: self._paste_button())
+
+        self._btn_cv = tk.Canvas(
+            btn_row, width=140, height=34, bg=BG,
+            highlightthickness=0, bd=0
+        )
+        self._btn_cv.pack(side="right")
+        self._draw_btn("disabled")
+        self._btn_cv.bind("<Button-1>", lambda e: self.ready and self._send())
+        self._btn_cv.bind("<Enter>",
+                          lambda e: self.ready and self._draw_btn("hover"))
+        self._btn_cv.bind("<Leave>",
+                          lambda e: self.ready and self._draw_btn("normal"))
+
+    def _resize_input(self, event):
+        w, h = event.width, 56
+        self._input_cv.configure(height=h)
+        self._input_cv.delete("input_bg")
+        draw_rounded_rect(
+            self._input_cv, 0, 0, w, h, RADIUS,
+            fill=BG_INPUT, outline=BG_INPUT, width=0, tags="input_bg"
+        )
+        self._input_cv.tag_lower("input_bg")
+        inner_x = 16
+        inner_w = max(50, w - inner_x * 2)
+        self._input_cv.itemconfig("entry_win", width=inner_w)
+        self._input_cv.coords("entry_win", inner_x, 10)
+
+    def _draw_btn(self, state):
+        c = self._btn_cv
+        c.delete("all")
+        W, H = 140, 34
+        if state == "disabled":
+            draw_rounded_rect(c, 0, 0, W, H, H // 2,
+                              fill=BTN_DIS, outline=BTN_DIS)
+            c.create_text(W // 2, H // 2, text="Отправить →",
+                          fill=BTN_TXT_DIS, font=("Helvetica Neue", 11, "bold"))
+        elif state == "hover":
+            draw_rounded_rect(c, 0, 0, W, H, H // 2,
+                              fill=BTN_HOV, outline=BTN_HOV)
+            c.create_text(W // 2, H // 2, text="Отправить →",
+                          fill=BTN_TXT_IDLE, font=("Helvetica Neue", 11, "bold"))
+        else:
+            draw_rounded_rect(c, 0, 0, W, H, H // 2,
+                              fill=BTN_IDLE, outline=BTN_IDLE)
+            c.create_text(W // 2, H // 2, text="Отправить →",
+                          fill=BTN_TXT_IDLE, font=("Helvetica Neue", 11, "bold"))
+
+    def _on_paste_global(self, event=None):
+        self.text_input.focus_force()
+        return self._on_paste(event)
+
+    def _on_paste(self, event=None):
+        self.text_input.focus_force()
+        text = ""
+        try:
+            text = self.root.clipboard_get()
+        except Exception:
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ["pbpaste"], capture_output=True, text=True, timeout=1
+                )
+                if result.returncode == 0:
+                    text = result.stdout
+            except Exception:
+                text = ""
+        if text:
+            try:
+                self.text_input.insert(tk.INSERT, text)
+                self.text_input.see(tk.INSERT)
+            except Exception:
+                pass
+        return "break"
+
+    def _paste_button(self):
+        self.text_input.focus_force()
+        text = ""
+        try:
+            text = self.root.clipboard_get()
+        except Exception:
+            pass
+        if not text:
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ["pbpaste"], capture_output=True, text=True
+                )
+                if result.returncode == 0:
+                    text = result.stdout
+            except Exception:
+                pass
+        if text:
+            self.text_input.insert("insert", text)
+            self.text_input.see("insert")
+
+    def _load_models(self):
+        def load():
+            try:
+                self._status("● загрузка RAG-системы...", FG_DIM)
+                self.pipeline = RAGPipeline(
+                    lm_studio_url=LM_STUDIO_URL,
+                    model_id=LM_STUDIO_MODEL_ID
+                )
+                self._status("● загрузка KeyT5-large...", FG_DIM)
+                self.tech_extractor = TechFunctionExtractor(model_path=KEYT5_MODEL_PATH)
+                self.ready = True
+                self._status("● готово", "#1a1a1a")
+                self.root.after(0, lambda: self._draw_btn("normal"))
+            except Exception as e:
+                self._status("● ошибка загрузки", FG_ERR)
+                self.root.after(
+                    0,
+                    lambda: self._bot_bubble(
+                        f"⚠ Ошибка при загрузке моделей:\n{e}",
+                        error=True
+                    )
+                )
+
+        threading.Thread(target=load, daemon=True).start()
+
+    def _status(self, text, color):
+        self.root.after(0, lambda: self.status_lbl.config(text=text, fg=color))
+
+    def _on_enter(self, event):
+        if event.state & 0x1:
+            return
+        self._send()
+        return "break"
+
+    def _send(self):
+        if not self.ready:
+            return
+        text = self.text_input.get("1.0", "end").strip()
+
+        if not text:
+            self._bot_bubble("⚠ Введите текст патента для анализа.", error=True)
+            return
+        if len(text) < 20:
+            self._bot_bubble(
+                "⚠ Текст слишком короткий. Вставьте полное описание "
+                "физического эффекта или фрагмент патента.",
+                error=True
+            )
+            return
+
+        self.text_input.delete("1.0", "end")
+        self.ready = False
+        self._draw_btn("disabled")
+
+        mode = self.current_mode
+        mode_label = MODE_LABELS[mode]
+        self._status(f"● анализ ({mode_label})...", FG_DIM)
+        self._user_bubble(text)
+        self._th_row = self._thinking_bubble()
+
+        def run():
+            try:
+                n = normalize_text(text)
+                fi = fo = fb = None
+                fe_error = None
+                funcs = []
+
+                if mode in (MODE_FE, MODE_ALL):
+                    try:
+                        res = self.pipeline.run(n)
+                        if res and res.get("status") == "ok":
+                            r = res.get("result", {})
+                            fi = prettify_input_params(
+                                r.get("input_params", "")) or "—"
+                            fb = r.get("object", "") or "—"
+                            fo = r.get("output_params", "") or "—"
+                        else:
+                            stage = res.get("stage", "") if res else ""
+                            msg = res.get("message", "") if res else ""
+                            if stage == "raw_extraction":
+                                fe_error = (
+                                    "Не удалось извлечь структуру эффекта "
+                                    "(модель не вернула корректный ответ)."
+                                )
+                            elif stage == "normalization":
+                                fe_error = "Ошибка нормализации результата."
+                            else:
+                                fe_error = (msg
+                                            or "Не удалось извлечь физический эффект.")
+                    except Exception as e:
+                        fe_error = f"Ошибка RAG-системы: {e}"
+
+                if mode in (MODE_TF, MODE_ALL):
+                    try:
+                        funcs = self.tech_extractor.extract(n)
+                    except Exception:
+                        funcs = []
+
+                self.root.after(
+                    0,
+                    lambda: self._finish(
+                        fi, fb, fo, fe_error, funcs, text, mode
+                    )
+                )
+            except Exception as e:
+                self.root.after(
+                    0,
+                    lambda: self._finish(
+                        None, None, None, str(e), [], text, mode
+                    )
+                )
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def _finish(self, fi, fb, fo, fe_error, funcs, source_text, mode):
+        if hasattr(self, "_th_row") and self._th_row:
+            self._th_row.destroy()
+
+        self._result_bubble(fi, fb, fo, fe_error, funcs, mode)
+        self._add_result_to_history(
+            fi, fb, fo, fe_error, funcs, source_text, mode
+        )
+
+        self.ready = True
+        self._draw_btn("normal")
+        self._status("● готово", "#1a1a1a")
+
+    def _update_selected_count(self):
+        count = sum(
+            1 for v in self.result_checks.values() if v.get()
+        )
+        self.selected_lbl.config(text=f"Выбрано: {count}")
+
+    def _add_result_to_history(self, fi, fb, fo, fe_error, funcs,
+                                source_text, mode):
+        idx = len(self.results) + 1
+        timestamp = datetime.now().strftime("%H:%M")
+
+        entry = {
+            "id": idx,
+            "timestamp": timestamp,
+            "mode": mode,
+            "mode_label": MODE_LABELS[mode],
+            "source_text": source_text,
+            "input_params": fi or "",
+            "object": fb or "",
+            "output_params": fo or "",
+            "fe_error": fe_error or "",
+            "tech_functions": funcs or [],
+            "is_error": bool(fe_error and not fi),
+        }
+        self.results.append(entry)
+
+        var = tk.BooleanVar(value=False)
+        var.trace_add("write", lambda *_: self._update_selected_count())
+        self.result_checks[idx] = var
+
+        self._render_card(entry, var)
+        self.counter_lbl.config(text=str(len(self.results)))
+
+    def _render_card(self, entry, var):
+        card = tk.Frame(self._cards_frame, bg=BG_CARD, pady=6, padx=8)
+        card.pack(fill="x", padx=6, pady=3)
+
+        top_row = tk.Frame(card, bg=BG_CARD)
+        top_row.pack(fill="x")
+
+        cb = tk.Checkbutton(
+            top_row, variable=var,
+            bg=BG_CARD, fg=CHECK_ON,
+            activebackground=BG_CARD, activeforeground=CHECK_ON,
+            selectcolor=BG_CARD, highlightthickness=0, bd=0
+        )
+        cb.pack(side="left")
+
+        header_text = (f"#{entry['id']}  {entry['timestamp']}  · "
+                       f" {entry['mode_label']}")
+        tk.Label(
+            top_row, text=header_text,
+            bg=BG_CARD, fg=FG_LABEL,
+            font=("Helvetica Neue", 10)
+        ).pack(side="left", padx=(2, 0))
+
+        if entry["is_error"]:
+            tk.Label(
+                top_row, text="⚠", bg=BG_CARD, fg=FG_ERR,
+                font=("Helvetica Neue", 10)
+            ).pack(side="right")
+
+        preview = entry["source_text"][:60].replace("\n", " ")
+        if len(entry["source_text"]) > 60:
+            preview += "..."
+        tk.Label(
+            card, text=preview,
+            bg=BG_CARD, fg=FG_DIM,
+            font=("Helvetica Neue", 10),
+            anchor="w", justify="left",
+            wraplength=200
+        ).pack(fill="x", pady=(2, 0))
+
+        all_widgets = [card, top_row]
+        for w in card.winfo_children():
+            all_widgets.append(w)
+        for w in top_row.winfo_children():
+            all_widgets.append(w)
+
+        def on_enter(e):
+            for widget in all_widgets:
+                try:
+                    widget.configure(bg=BG_CARD_HOV)
+                except Exception:
+                    pass
+
+        def on_leave(e):
+            for widget in all_widgets:
+                try:
+                    widget.configure(bg=BG_CARD)
+                except Exception:
+                    pass
+
+        for widget in all_widgets:
+            widget.bind("<Enter>", on_enter)
+            widget.bind("<Leave>", on_leave)
+
+        self.root.after(
+            50,
+            lambda: self._cards_canvas.yview_moveto(1.0)
+        )
+
+    def _get_selected_results(self):
+        selected = []
+        for entry in self.results:
+            var = self.result_checks.get(entry["id"])
+            if var and var.get():
+                selected.append(entry)
+        return selected
+
+    def _save_selected(self):
+        selected = self._get_selected_results()
+        if not selected:
+            messagebox.showinfo(
+                "Сохранение",
+                "Не выбрано ни одного результата.\n"
+                "Отметьте чекбоксы в панели истории."
+            )
+            return
+        self._save_dialog(selected)
+
+    def _save_all(self):
+        if not self.results:
+            messagebox.showinfo("Сохранение", "Нет результатов для сохранения.")
+            return
+        self._save_dialog(self.results)
+
+    def _save_dialog(self, data):
+        path = filedialog.asksaveasfilename(
+            title="Сохранить результаты",
+            defaultextension=".json",
+            filetypes=[
+                ("JSON", "*.json"),
+                ("CSV", "*.csv"),
+                ("Текстовый файл", "*.txt"),
+            ]
+        )
+        if not path:
+            return
+
+        try:
+            ext = path.rsplit(".", 1)[-1].lower() if "." in path else "json"
+            if ext == "json":
+                self._save_json(path, data)
+            elif ext == "csv":
+                self._save_csv(path, data)
+            else:
+                self._save_txt(path, data)
+            messagebox.showinfo(
+                "Сохранено",
+                f"Сохранено {len(data)} результат(ов) в:\n{path}"
+            )
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось сохранить:\n{e}")
+
+    @staticmethod
+    def _save_json(path, data):
+        export = []
+        for entry in data:
+            export.append({
+                "id": entry["id"],
+                "timestamp": entry["timestamp"],
+                "mode": entry["mode_label"],
+                "source_text": entry["source_text"],
+                "input_params": entry["input_params"],
+                "object": entry["object"],
+                "output_params": entry["output_params"],
+                "tech_functions": entry["tech_functions"],
+                "error": entry["fe_error"],
+            })
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(export, f, ensure_ascii=False, indent=2)
+
+    @staticmethod
+    def _save_csv(path, data):
+        fieldnames = [
+            "id", "timestamp", "mode", "source_text",
+            "input_params", "object", "output_params",
+            "tech_functions", "error"
+        ]
+        with open(path, "w", encoding="utf-8-sig", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for entry in data:
+                writer.writerow({
+                    "id": entry["id"],
+                    "timestamp": entry["timestamp"],
+                    "mode": entry["mode_label"],
+                    "source_text": entry["source_text"],
+                    "input_params": entry["input_params"],
+                    "object": entry["object"],
+                    "output_params": entry["output_params"],
+                    "tech_functions": "; ".join(entry["tech_functions"]),
+                    "error": entry["fe_error"],
+                })
+
+    @staticmethod
+    def _save_txt(path, data):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("РЕЗУЛЬТАТЫ АНАЛИЗА ПАТЕНТОВ\n")
+            f.write(f"Дата: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+            f.write(f"Количество результатов: {len(data)}\n")
+            f.write("=" * 60 + "\n\n")
+
+            for entry in data:
+                f.write(
+                    f"--- Анализ #{entry['id']} "
+                    f"({entry['timestamp']}, {entry['mode_label']}) ---\n\n"
+                )
+                f.write(f"Исходный текст:\n{entry['source_text']}\n\n")
+
+                if entry["fe_error"] and not entry["input_params"]:
+                    f.write(f"Ошибка: {entry['fe_error']}\n\n")
+                else:
+                    if entry["input_params"]:
+                        f.write(f"Вход:   {entry['input_params']}\n")
+                        f.write(f"Объект: {entry['object']}\n")
+                        f.write(f"Выход:  {entry['output_params']}\n\n")
+
+                if entry["tech_functions"]:
+                    f.write("Технические функции:\n")
+                    for func in entry["tech_functions"]:
+                        f.write(f"  - {func}\n")
+                    f.write("\n")
+
+                f.write("=" * 60 + "\n\n")
+
+    def _add_row(self, side):
+        row = tk.Frame(self.msg_frame, bg=BG, pady=4)
+        row.pack(fill="x", padx=14)
+        return row
+
+    def _user_bubble(self, text):
+        row = self._add_row("right")
+        b = RoundedBubble(
+            row, text, bg_bubble=BG_USER, fg_text=FG_USER,
+            max_wrap=460, font=("Helvetica Neue", 13)
+        )
+        b.pack(side="right", anchor="n", padx=(60, 0))
+        self._scroll()
+
+    def _bot_bubble(self, text, greeting=False, error=False):
+        row = self._add_row("left")
+        fg = FG_ERR if error else FG_ACCENT
+        b = RoundedBubble(
+            row, text, bg_bubble=BG_BOT, fg_text=fg,
+            max_wrap=520, font=("Helvetica Neue", 13)
+        )
+        b.pack(side="left", anchor="n", padx=(0, 60))
+        self._scroll()
+
+    def _thinking_bubble(self):
+        row = self._add_row("left")
+        b = RoundedBubble(
+            row, "анализирую...", bg_bubble=BG_BOT, fg_text=FG_DIM,
+            max_wrap=300, font=("Helvetica Neue", 13, "italic")
+        )
+        b.pack(side="left", anchor="n", padx=(0, 60))
+        self._scroll()
+        return row
+
+    def _result_bubble(self, fi, fb, fo, fe_error, funcs, mode):
+        row = self._add_row("left")
+        lines = []
+
+        if mode in (MODE_FE, MODE_ALL):
+            if fe_error and not fi:
+                lines.append(f"⚠ {fe_error}")
+            else:
+                lines.append("Физический эффект:")
+                lines.append(f"  вход:    {fi}")
+                lines.append(f"  объект:  {fb}")
+                lines.append(f"  выход:   {fo}")
+
+        if mode in (MODE_TF, MODE_ALL):
+            if lines:
+                lines.append("")
+            lines.append("Технические функции:")
+            if funcs:
+                for func in funcs:
+                    lines.append(f"  ●  {func}")
+            else:
+                lines.append("  не найдены")
+
+        full_text = "\n".join(lines)
+        has_error = bool(fe_error and not fi)
+        fg = FG_ERR if has_error else FG_BOT
+
+        b = RoundedBubble(
+            row, full_text, bg_bubble=BG_BOT, fg_text=fg,
+            max_wrap=540, font=("Helvetica Neue", 12)
+        )
+        b.pack(side="left", anchor="n", padx=(0, 40))
+        self._scroll()
+
+    def _scroll(self):
+        self.root.after(60, lambda: self.canvas.yview_moveto(1.0))
+
+
+
+def main():
+    root = tk.Tk()
+    ChatApp(root)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()```
+
+===== ./src/build_lancedb.py =====
+```python
+import lancedb
+import numpy as np
+import pickle
+from pathlib import Path
+import logging
+import pyarrow as pa
+import shutil
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+class LanceDBBuilder:
+    def __init__(self, db_path: str = "./lancedb_data"):
+        self.db_path = Path(__file__).parent.parent / db_path
+
+        if self.db_path.exists():
+            shutil.rmtree(self.db_path)
+            logging.info(f"удалена старая база: {self.db_path}")
+
+        self.db_path.mkdir(parents=True, exist_ok=True)
+        self.db = lancedb.connect(str(self.db_path))
+        logging.info(f"создана новая база: {self.db_path}")
+
+    def create_table(self, table_name: str = "physical_effects", embedding_dim: int = 384):
+        schema = pa.schema([
+            pa.field("vector", pa.list_(pa.float32(), embedding_dim)),
+
+            pa.field("chunk_id", pa.string()),
+            pa.field("effect_id", pa.string()),
+            pa.field("effect_name", pa.string()),
+            pa.field("chunk_type", pa.string()),
+            pa.field("text", pa.string()),
+
+            # новые поля
+            pa.field("description", pa.string()),
+            pa.field("canonical_description", pa.string()),
+            pa.field("description_hash", pa.string()),
+            pa.field("input_params", pa.string()),
+            pa.field("object", pa.string()),
+            pa.field("output_params", pa.string()),
+        ])
+
+        self.table = self.db.create_table(table_name, schema=schema, mode="overwrite")
+        logging.info(f"создана таблица: {table_name}")
+        return self.table
+
+    def load_data(self, chunks_path: Path, embeddings_path: Path):
+        with open(chunks_path, "rb") as f:
+            chunks = pickle.load(f)
+
+        embeddings = np.load(embeddings_path)
+
+        if len(chunks) != len(embeddings):
+            raise ValueError("кол-во чанков и эмбеддингов не совпадает")
+
+        data = []
+        for chunk, emb in zip(chunks, embeddings):
+            data.append({
+                "vector": emb.tolist(),
+
+                "chunk_id": chunk.get("chunk_id", ""),
+                "effect_id": chunk.get("effect_id", ""),
+                "effect_name": chunk.get("effect_name", ""),
+                "chunk_type": chunk.get("chunk_type", ""),
+                "text": chunk.get("text", ""),
+
+                # новые поля
+                "description": chunk.get("description", ""),
+                "canonical_description": chunk.get("canonical_description", ""),
+                "description_hash": chunk.get("description_hash", ""),
+                "input_params": chunk.get("input_params", ""),
+                "object": chunk.get("object", ""),
+                "output_params": chunk.get("output_params", ""),
+            })
+
+        batch_size = 100
+        for i in range(0, len(data), batch_size):
+            self.table.add(data[i:i + batch_size])
+            logging.info(f"загружено {min(i + batch_size, len(data))} из {len(data)}")
+
+        try:
+            self.table.create_index(
+                metric="cosine",
+                index_type="IVF_PQ",
+                num_partitions=32,
+                num_sub_vectors=32
+            )
+            logging.info("индекс IVF_PQ создан")
+        except Exception as e:
+            logging.warning(f"не удалось создать индекс с параметрами: {e}")
+            self.table.create_index(metric="cosine")
+            logging.info("создан обычный индекс")
+
+        return self.table
+
+
+def main():
+    cache_dir = Path(__file__).parent.parent / "embeddings_cache"
+    chunks_path = cache_dir / "chunks_with_emb.pkl"
+    embeddings_path = cache_dir / "embeddings.npy"
+
+    if not chunks_path.exists() or not embeddings_path.exists():
+        raise FileNotFoundError("не найдены файлы embeddings_cache")
+
+    embeddings = np.load(embeddings_path)
+    embedding_dim = embeddings.shape[1]
+
+    builder = LanceDBBuilder()
+    builder.create_table(embedding_dim=embedding_dim)
+    builder.load_data(chunks_path, embeddings_path)
+
+    print(f"\nбаза готова: {builder.db_path}")
+    print(f"всего записей: {builder.table.count_rows()}")
+
+
+if __name__ == "__main__":
+    main()```
+
+===== ./src/verifier.py =====
+```python
+import re
+
+
+class Verifier:
+    def __init__(self):
+        self.condition_markers = [
+            "при ",
+            "в случае ",
+            "если ",
+            "когда ",
+            "после ",
+            "до ",
+            "во время ",
+            "в условиях ",
+        ]
+
+        self.empty_values = {"", "-", "нет", "none", "null", "[]"}
+
+    @staticmethod
+    def _clean(value: str) -> str:
+        if value is None:
+            return ""
+        value = str(value).strip()
+        value = re.sub(r"\s+", " ", value)
+        return value
+
+    def _is_empty(self, value: str) -> bool:
+        return self._clean(value).lower() in self.empty_values
+
+    def _looks_like_condition(self, value: str) -> bool:
+        text = self._clean(value).lower()
+        return any(marker in text for marker in self.condition_markers)
+
+    def _count_semantic_parts(self, value: str) -> int:
+        text = self._clean(value)
+        if not text:
+            return 0
+
+        parts = re.split(r"[.;]", text)
+        parts = [p.strip() for p in parts if p.strip()]
+        return len(parts)
+
+    def verify(self, normalized_result: dict) -> dict:
+        input_params = self._clean(normalized_result.get("input_params", ""))
+        effect_object = self._clean(normalized_result.get("object", ""))
+        output_params = self._clean(normalized_result.get("output_params", ""))
+
+        issues = []
+        warnings = []
+
+        if self._is_empty(input_params):
+            issues.append("пустое поле input_params")
+
+        if self._is_empty(effect_object):
+            issues.append("пустое поле object")
+
+        if self._is_empty(output_params):
+            issues.append("пустое поле output_params")
+
+        if input_params and self._looks_like_condition(input_params):
+            warnings.append("input_params содержит условие, а не только сущность")
+
+        if output_params and self._looks_like_condition(output_params):
+            warnings.append("output_params содержит условие, а не только сущность")
+
+        if effect_object and self._looks_like_condition(effect_object):
+            warnings.append("object содержит условие, а не только объект")
+
+        if input_params and len(input_params) < 3:
+            warnings.append("слишком короткое поле input_params")
+
+        if effect_object and len(effect_object) < 2:
+            warnings.append("слишком короткое поле object")
+
+        if output_params and len(output_params) < 3:
+            warnings.append("слишком короткое поле output_params")
+
+        if input_params and input_params == output_params:
+            warnings.append("input_params и output_params совпадают дословно")
+
+        if effect_object and effect_object == input_params:
+            warnings.append("object и input_params совпадают дословно")
+
+        if effect_object and effect_object == output_params:
+            warnings.append("object и output_params совпадают дословно")
+
+        input_parts = self._count_semantic_parts(input_params)
+        output_parts = self._count_semantic_parts(output_params)
+
+        result = {
+            "status": "ok" if not issues else "error",
+            "is_valid": len(issues) == 0,
+            "issues": issues,
+            "warnings": warnings,
+            "result": {
+                "input_params": input_params,
+                "object": effect_object,
+                "output_params": output_params
+            },
+            "stats": {
+                "input_parts": input_parts,
+                "output_parts": output_parts
+            }
+        }
+
+        return result
+```
+

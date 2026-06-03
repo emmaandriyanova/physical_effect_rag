@@ -37,6 +37,12 @@ class ThesaurusNormalizer:
         self.object_alias_rules = [
             (r"\bпроводящ\w*\s+сред\w*\b", "Проводящая среда"),
             (r"\bпроводник\w*\b", "Проводник"),
+            (r"\bферромагнитн\w*\s+(?:материал\w*|веществ\w*|сплав\w*)\b", "Ферромагнитный материал"),
+            (r"\bаморфн\w*\s+сплав\w*\b", "Аморфные сплавы"),
+            (r"\bметалл\w*\b", "Металлы"),
+            (r"\bжидкост\w*\b", "Жидкость"),
+            (r"\bгаз\w*\b", "Газ"),
+            (r"\bкристалл\w*\b", "Кристалл"),
         ]
 
     @staticmethod
@@ -89,6 +95,60 @@ class ThesaurusNormalizer:
 
         return None
 
+    @staticmethod
+    def _extract_formula_phrase(text: str) -> str:
+        formula_tokens = re.findall(
+            r"\b(?:Fe|Co|Ni|Si|B|P|Mo|Cr|Zr|Ti|Al|Cu|Mn|Nb|W|Gd|Dy|Ho|Au|Pd|Pt)"
+            r"(?:\([^)]{1,20}\)|\d+(?:[,.]\d+)?)?",
+            text
+        )
+        if not formula_tokens:
+            return ""
+
+        formula = "".join(formula_tokens)
+        text_low = text.lower()
+        if "сплав" in text_low:
+            return f"сплав {formula}"
+        if "порош" in text_low:
+            return f"порошок {formula}"
+        return formula
+
+    def _object_search_terms(self, text: str) -> list[str]:
+        text = self._clean(text)
+        if not text:
+            return []
+
+        candidates = [text]
+        formula_phrase = self._extract_formula_phrase(text)
+        if formula_phrase:
+            candidates.append(formula_phrase)
+
+        chunks = re.split(r"[.;]|\s+-\s+|\s+—\s+|\s+–\s+", text)
+        object_keywords = (
+            "материал", "веществ", "сред", "тело", "металл", "газ", "жидк",
+            "кристалл", "сплав", "порош", "проводник", "диэлектрик", "полупроводник"
+        )
+        for chunk in chunks:
+            chunk = self._clean(chunk)
+            if not chunk:
+                continue
+            parts = [self._clean(x) for x in re.split(r",|\s+и\s+", chunk) if self._clean(x)]
+            for part in [chunk, *parts]:
+                part_low = part.lower()
+                if any(k in part_low for k in object_keywords) or self._extract_formula_phrase(part):
+                    words = part.split()
+                    if len(words) <= 8:
+                        candidates.append(part)
+
+        result = []
+        seen = set()
+        for candidate in candidates:
+            key = candidate.lower()
+            if key not in seen:
+                result.append(candidate)
+                seen.add(key)
+        return result
+
     def _normalize_input(self, raw_input: str) -> dict:
         raw_input = self._clean(raw_input)
 
@@ -113,22 +173,9 @@ class ThesaurusNormalizer:
         }
 
     def _normalize_object(self, raw_object: str) -> dict | None:
-        import re
         raw_object_clean = str(raw_object or "").strip()
         if not raw_object_clean:
             return None
-
-        has_formula = bool(re.search(
-            r"\b(Fe|Co|Ni|Si|B|P|Mo|Cr|Zr|Ti|Al|Cu|Mn|Nb|W|Gd|Dy|Ho|Au|Pd|Pt)\b",
-            raw_object_clean
-        ))
-        if has_formula:
-            return {
-                "raw": raw_object_clean,
-                "candidate": None,
-                "canonical_text": raw_object_clean,
-                "source": "raw_formula"
-            }
 
         alias = self._apply_alias_rules(raw_object_clean, self.object_alias_rules)
         if alias:
@@ -139,9 +186,20 @@ class ThesaurusNormalizer:
                 "source": "alias"
             }
 
-        picked = self._pick_candidate(raw_object_clean, role="object")
-        if picked:
-            return picked
+        for candidate_text in self._object_search_terms(raw_object_clean):
+            picked = self._pick_candidate(candidate_text, role="object")
+            if picked:
+                picked["raw"] = raw_object_clean
+                return picked
+
+        formula_phrase = self._extract_formula_phrase(raw_object_clean)
+        if formula_phrase:
+            return {
+                "raw": raw_object_clean,
+                "candidate": None,
+                "canonical_text": formula_phrase,
+                "source": "raw_formula"
+            }
 
         return {
             "raw": raw_object_clean,

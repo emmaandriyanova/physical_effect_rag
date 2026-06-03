@@ -40,6 +40,53 @@ class Verifier:
         parts = [p.strip() for p in parts if p.strip()]
         return len(parts)
 
+    @staticmethod
+    def _split_fetext_items(value: str, prefix: str | None = None) -> list[str]:
+        text = str(value or "").strip()
+        if not text:
+            return []
+
+        if prefix and re.search(rf"{prefix}\d+[:.]\s*", text):
+            parts = re.split(rf"{prefix}\d+[:.]\s*", text)
+        else:
+            parts = re.split(r"[.;]", text)
+
+        return [p.strip() for p in parts if p.strip()]
+
+    @staticmethod
+    def _canonicalize_for_compare(value: str) -> str:
+        text = str(value or "").lower()
+        text = text.replace("ё", "е")
+        text = re.sub(r"\([^)]*\)", "", text)
+        text = re.sub(r"\b(увеличение|уменьшение|снижение|повышение|рост)\b", "", text)
+        text = re.sub(r"[^\w\s]+", " ", text)
+        text = re.sub(r"\s+", " ", text)
+        return text.strip()
+
+    def _remove_outputs_matching_inputs(self, input_params: str, output_params: str) -> tuple[str, list[str]]:
+        input_items = self._split_fetext_items(input_params, prefix="Вход")
+        output_items = self._split_fetext_items(output_params)
+
+        input_keys = {
+            self._canonicalize_for_compare(item)
+            for item in input_items
+            if self._canonicalize_for_compare(item)
+        }
+
+        kept = []
+        removed = []
+        for item in output_items:
+            output_key = self._canonicalize_for_compare(item)
+            if output_key and output_key in input_keys:
+                removed.append(item)
+            else:
+                kept.append(item)
+
+        if not removed:
+            return output_params, []
+
+        return ". ".join(kept).strip(), removed
+
     def verify(self, normalized_result: dict) -> dict:
         input_params = self._clean(normalized_result.get("input_params", ""))
         effect_object = self._clean(normalized_result.get("object", ""))
@@ -47,6 +94,13 @@ class Verifier:
 
         issues = []
         warnings = []
+
+        output_params, removed_outputs = self._remove_outputs_matching_inputs(input_params, output_params)
+        if removed_outputs:
+            warnings.append(
+                "из output_params удалены элементы, совпадающие с input_params: "
+                + "; ".join(removed_outputs)
+            )
 
         if self._is_empty(input_params):
             issues.append("пустое поле input_params")

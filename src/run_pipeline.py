@@ -1,14 +1,12 @@
 import logging
 
 from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
-from exact_match import ExactMatchFinder
 from retriever import FERetriever
 from thesaurus_match import ThesaurusMatcher
 from raw_extractor import RawExtractor
 from normalizer import Normalizer
 from verifier import Verifier
 from thesaurus_normalizer import ThesaurusNormalizer
-from candidate_miner import CandidateMiner
 from fetext_formatter import FETextFormatter
 from text_preprocessor import normalize_text
 
@@ -21,22 +19,15 @@ class RAGPipeline:
         lm_studio_url: str = LM_STUDIO_URL,
         model_id: str = LM_STUDIO_MODEL_ID
     ):
-
-        self.candidate_miner = CandidateMiner()
-        self.exact_matcher = ExactMatchFinder()
         self.retriever = FERetriever()
         self.thesaurus_matcher = ThesaurusMatcher()
         self.thesaurus_normalizer = ThesaurusNormalizer(self.thesaurus_matcher)
         self.fetext_formatter = FETextFormatter(self.thesaurus_matcher)
-
         self.raw_extractor = RawExtractor(
             lm_studio_url=lm_studio_url,
             model_id=model_id
         )
-        self.normalizer = Normalizer(
-            lm_studio_url=lm_studio_url,
-            model_id=model_id
-        )
+        self.normalizer = Normalizer()
         self.verifier = Verifier()
 
     def run(self, query_text: str) -> dict:
@@ -48,52 +39,15 @@ class RAGPipeline:
                 "message": "Пустой входной текст"
             }
 
-        exact_result = self.exact_matcher.find(query_text)
-        if exact_result:
-            return {
-                "status": "ok",
-                "source": "exact_match",
-                "result": {
-                    "input_params": exact_result["input_params"],
-                    "object": exact_result["object"],
-                    "output_params": exact_result["output_params"]
-                },
-                "verification": None,
-                "debug": {
-                    "effect_id": exact_result["effect_id"],
-                    "effect_name": exact_result["effect_name"],
-                    "match_type": exact_result["match_type"]
-                }
-            }
-
-        near = self.exact_matcher.find_near_duplicate(query_text)
-
-
-
-        main_example = None
-        aux_examples = []
-
-        if near:
-            main_example = near["example"]
-
-        if main_example is None:
-            example_bundle = self.retriever.get_example_bundle(query_text, main_k=1, aux_k=2)
-            main_example = example_bundle["main_example"]
-            aux_examples = example_bundle["aux_examples"]
-        else:
-            example_bundle = self.retriever.get_example_bundle(query_text, main_k=0, aux_k=2)
-            aux_examples = example_bundle["aux_examples"]
-
+        example_bundle = self.retriever.get_example_bundle(query_text, main_k=1, aux_k=0)
         retrieved_examples = []
-        if main_example:
-            retrieved_examples.append(main_example)
-        retrieved_examples.extend(aux_examples)
+        if example_bundle["main_example"]:
+            retrieved_examples.append(example_bundle["main_example"])
+        retrieved_examples.extend(example_bundle["aux_examples"])
 
-        candidate_bundle = self.candidate_miner.mine(query_text)
         raw_extraction = self.raw_extractor.extract(
             query_text=query_text,
-            retrieved_examples=retrieved_examples,
-            candidate_bundle=candidate_bundle
+            retrieved_examples=retrieved_examples
         )
 
         if raw_extraction.get("status") != "ok":
@@ -103,8 +57,7 @@ class RAGPipeline:
                 "message": raw_extraction.get("message", "ошибка"),
                 "debug": {
                     "raw_response": raw_extraction.get("raw_response", ""),
-                    "main_example": main_example,
-                    "aux_examples": aux_examples
+                    "retrieved_examples": retrieved_examples
                 }
             }
 
@@ -114,8 +67,6 @@ class RAGPipeline:
 
         normalization = self.normalizer.normalize(
             raw_result=raw_result,
-            main_example=main_example,
-            aux_examples=aux_examples,
             thesaurus_candidates=thesaurus_candidates
         )
 
@@ -126,8 +77,6 @@ class RAGPipeline:
                 "message": normalization.get("message", "ошибка нормализации"),
                 "debug": {
                     "raw_result": raw_result,
-                    "main_example": main_example,
-                    "aux_examples": aux_examples,
                     "thesaurus_candidates": thesaurus_candidates
                 }
             }
@@ -142,9 +91,17 @@ class RAGPipeline:
 
         verified = self.verifier.verify(formatted_result)
 
+        pipeline_status = "ok" if verified.get("is_valid") else "error"
+        message = None
+        if pipeline_status == "error":
+            issues = verified.get("issues", [])
+            message = "; ".join(issues) if issues else "ошибка верификации"
+
         return {
-            "status": "ok",
-            "source": "llm_rag",
+            "status": pipeline_status,
+            "source": "llm",
+            "stage": "verification" if pipeline_status == "error" else None,
+            "message": message,
             "result": verified["result"],
             "verification": {
                 "is_valid": verified["is_valid"],
@@ -154,8 +111,7 @@ class RAGPipeline:
             },
             "debug": {
                 "raw_result": raw_result,
-                "main_example": main_example,
-                "aux_examples": aux_examples,
+                "retrieved_examples": retrieved_examples,
                 "thesaurus_candidates": thesaurus_candidates,
                 "normalized_result": normalized_result,
                 "formatted_result": formatted_result

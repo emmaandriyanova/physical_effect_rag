@@ -31,7 +31,7 @@ class LanceDBBuilder:
             pa.field("chunk_type", pa.string()),
             pa.field("text", pa.string()),
 
-            # новые поля
+
             pa.field("description", pa.string()),
             pa.field("canonical_description", pa.string()),
             pa.field("description_hash", pa.string()),
@@ -64,7 +64,7 @@ class LanceDBBuilder:
                 "chunk_type": chunk.get("chunk_type", ""),
                 "text": chunk.get("text", ""),
 
-                # новые поля
+
                 "description": chunk.get("description", ""),
                 "canonical_description": chunk.get("canonical_description", ""),
                 "description_hash": chunk.get("description_hash", ""),

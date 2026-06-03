@@ -1,6 +1,6 @@
 from pathlib import Path
 
-LM_STUDIO_URL = "http://79.170.162.18:1234/v1/chat/completions"
+LM_STUDIO_URL = "http://79.170.162.18:1234/v1/completions"
 LM_STUDIO_MODEL_ID = "qwen3-8b"
 
 EMBEDDING_MODEL = "intfloat/multilingual-e5-small"

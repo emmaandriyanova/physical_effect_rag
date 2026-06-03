@@ -137,7 +137,6 @@ class ChatApp:
         self._load_models()
 
     def _build_ui(self):
-        # ── заголовок ──
         hdr = tk.Frame(self.root, bg=BG, pady=10)
         hdr.pack(fill="x", padx=20)
 

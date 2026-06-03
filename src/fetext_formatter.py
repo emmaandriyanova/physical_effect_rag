@@ -61,6 +61,15 @@ class FETextFormatter:
         return [text]
 
     @staticmethod
+    def _normalize_formatting(text: str) -> str:
+        text = str(text or "").strip()
+        if not text:
+            return text
+        text = re.sub(r'(\w)\(', r'\1 (', text)
+        text = re.sub(r'\.\s+([а-яёa-zA-Z])', lambda m: '. ' + m.group(1).upper(), text)
+        return text
+
+    @staticmethod
     def _looks_abbreviated(text: str) -> bool:
         t = str(text or "").strip()
         if not t:
@@ -188,14 +197,13 @@ class FETextFormatter:
                 uniq.append(p)
                 seen.add(k)
 
-        return ". ".join([p for p in uniq if p]).strip()
+        return self._normalize_formatting(". ".join([p for p in uniq if p]).strip())
 
     def format_output_field(self, output_text: str) -> str:
-
-        return self._canonical_term(output_text, role="output")
+        return self._normalize_formatting(self._canonical_term(output_text, role="output"))
 
     def format_object_field(self, object_text: str) -> str:
-        return self._canonical_term(object_text, role="object")
+        return self._normalize_formatting(self._canonical_term(object_text, role="object"))
 
     def format_input_params(self, input_params: str) -> str:
         items = self._split_fetext_items(input_params)
