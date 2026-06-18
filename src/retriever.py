@@ -1,3 +1,13 @@
+"""
+Векторный поиск похожих физических эффектов в базе данных LanceDB для
+формирования RAG-контекста. Поддерживает ранжирование по типу чанка,
+семантическому сходству и структурному совпадению полей.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 from pathlib import Path
 import logging
 
@@ -68,6 +78,15 @@ class FERetriever:
         top_k: int = 5,
         chunk_types: list[str] | None = None
     ) -> list[dict]:
+        """
+        Выполняет векторный поиск похожих чанков в LanceDB.
+
+        :param query_text: текст запроса
+        :param top_k: максимальное число возвращаемых результатов
+        :param chunk_types: фильтр по типам чанков (record, description, triple);
+                            None — без фильтрации
+        :return: список словарей с полями chunk_id, effect_id, effect_name, input_params и др.
+        """
         if not query_text or not query_text.strip():
             return []
 
@@ -181,6 +200,14 @@ class FERetriever:
         return results
 
     def get_example_bundle(self, query_text: str, main_k: int = 1, aux_k: int = 2) -> dict:
+        """
+        Возвращает набор примеров для RAG-контекста: один главный и несколько вспомогательных.
+
+        :param query_text: текст запроса
+        :param main_k: количество главных примеров (обычно 1)
+        :param aux_k: количество вспомогательных примеров из других эффектов
+        :return: словарь с ключами main_example (dict или None) и aux_examples (list[dict])
+        """
 
         examples = self.search_examples(query_text, top_k=main_k + aux_k + 3)
 

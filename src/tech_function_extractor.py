@@ -1,4 +1,13 @@
+"""
+Извлечение технических функций из текста патента с помощью дообученной
+модели KeyT5 (seq2seq). Приоритизирует предложения с описанием технического
+результата и возвращает список функций, разделённых точкой с запятой.
 
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import re
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
@@ -63,6 +72,12 @@ class TechFunctionExtractor:
         return result.strip() if result.strip() else text[:self.max_input_length * 4]
 
     def extract(self, text: str) -> list[str]:
+        """
+        Извлекает список технических функций из текста патента.
+
+        :param text: текст патента на русском языке
+        :return: список строк с техническими функциями; пустой список при пустом входе
+        """
         if not text or not text.strip():
             return []
 

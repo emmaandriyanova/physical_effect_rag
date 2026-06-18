@@ -1,3 +1,13 @@
+"""
+Верификация извлечённой структуры физического эффекта: проверка наличия
+обязательных полей, выявление условий вместо физических сущностей,
+контроль уникальности и минимальной длины значений.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import re
 
 
@@ -88,6 +98,13 @@ class Verifier:
         return ". ".join(kept).strip(), removed
 
     def verify(self, normalized_result: dict) -> dict:
+        """
+        Проверяет корректность извлечённой структуры физического эффекта.
+
+        :param normalized_result: словарь с полями input_params, object, output_params
+        :return: словарь с полями is_valid, issues (критичные ошибки),
+                 warnings (предупреждения), result (исходные поля) и stats
+        """
         input_params = self._clean(normalized_result.get("input_params", ""))
         effect_object = self._clean(normalized_result.get("object", ""))
         output_params = self._clean(normalized_result.get("output_params", ""))

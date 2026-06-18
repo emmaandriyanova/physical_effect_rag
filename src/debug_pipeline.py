@@ -1,3 +1,12 @@
+"""
+Отладочный скрипт для проверки работы RAG-пайплайна на отдельных примерах
+с подробным выводом промежуточных и итоговых результатов извлечения.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
 from run_pipeline import RAGPipeline
 

@@ -1,3 +1,14 @@
+"""
+Извлечение структуры физического эффекта (вход / объект / выход) из текста
+патента с помощью дообученной языковой модели через LM Studio API.
+Формирует промт с RAG-примером, разбирает JSON-ответ модели и выполняет
+первичную постобработку извлечённых полей.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import json
 import logging
 import re
@@ -37,6 +48,13 @@ class RawExtractor:
         return "\n".join(parts)
 
     def build_prompts(self, query_text: str, examples_context: str):
+        """
+        Формирует системный и пользовательский промты для LLM-извлечения.
+
+        :param query_text: текст патента для анализа
+        :param examples_context: отформатированные примеры из RAG-ретривала
+        :return: кортеж (system_prompt, user_prompt)
+        """
 
         system_prompt = (
             "Ты — эксперт по физике и анализу патентов. "
@@ -191,6 +209,14 @@ class RawExtractor:
         }
 
     def extract(self, query_text: str, retrieved_examples: list[dict]) -> dict:
+        """
+        Извлекает структуру физического эффекта из текста патента через LLM.
+
+        :param query_text: текст патента для анализа
+        :param retrieved_examples: список примеров из базы физических эффектов для RAG-контекста
+        :return: словарь со статусом и полями raw_inputs, raw_object, raw_outputs,
+                 либо словарь с ошибкой и raw_response при неудаче
+        """
         examples_context = self.build_examples_context(retrieved_examples)
         system_prompt, user_prompt = self.build_prompts(query_text, examples_context)
 

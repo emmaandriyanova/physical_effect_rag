@@ -1,3 +1,13 @@
+"""
+HTTP-клиент для взаимодействия с дообученной языковой моделью через LM Studio
+API. Формирует запросы в формате completion с промтом-префиксом, обрабатывает
+теги <think>, повторяет запрос до трёх раз при сетевых ошибках.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import requests
 import logging
 import re
@@ -50,6 +60,15 @@ class LMStudioClient:
             temperature: float = 0.0,
             max_tokens: int = 2000
     ) -> str:
+        """
+        Отправляет запрос к языковой модели в LM Studio и возвращает очищенный ответ.
+
+        :param system_prompt: инструкции для модели, добавляются как префикс перед текстом
+        :param user_prompt: основной текст запроса (патент + пример)
+        :param temperature: температура генерации (0.0 — детерминированный режим)
+        :param max_tokens: максимальное число токенов в ответе
+        :return: строка с ответом модели, очищенная от тегов <think> и markdown
+        """
         prefix = f"{system_prompt}\n\n" if system_prompt and system_prompt.strip() else ""
         payload = {
             "model": self.model_id,
@@ -75,6 +94,15 @@ class LMStudioClient:
         return self.clean_response_text(content)
 
     def chat_optional(self, system_prompt, user_prompt, temperature=0.0, max_tokens=2000):
+        """
+        Вызывает chat() с повторными попытками при сетевых ошибках.
+
+        :param system_prompt: инструкции для модели
+        :param user_prompt: основной текст запроса
+        :param temperature: температура генерации
+        :param max_tokens: максимальное число токенов в ответе
+        :return: строка с ответом модели или None при трёх неудачных попытках
+        """
         for attempt in range(3):
             try:
                 return self.chat(

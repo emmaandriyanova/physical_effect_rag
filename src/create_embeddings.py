@@ -1,3 +1,13 @@
+"""
+Генерация векторных эмбеддингов для чанков физических эффектов с помощью
+модели SentenceTransformer (multilingual-e5-small) и сохранение результатов
+в формате pickle для последующей загрузки в LanceDB.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import json
 import numpy as np
 from sentence_transformers import SentenceTransformer

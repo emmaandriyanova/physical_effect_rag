@@ -1,3 +1,13 @@
+"""
+Поиск терминов в тезаурусе физических эффектов: точное совпадение по
+MD5-хешу канонической формы и семантический поиск через LanceDB с
+фильтрацией по роли (вход / объект / выход) и лифтингом терминов.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 from pathlib import Path
 import logging
 import hashlib
@@ -251,6 +261,14 @@ class ThesaurusMatcher:
         return None
 
     def find_best(self, term: str, top_k: int = 5, role: str | None = None) -> dict:
+        """
+        Ищет наилучшее совпадение для термина в тезаурусе: сначала точное, затем семантическое.
+
+        :param term: искомый термин
+        :param top_k: число кандидатов для семантического поиска
+        :param role: роль термина — 'input', 'object', 'output' или None (без фильтрации)
+        :return: словарь с ключами query, exact_match (dict или None), similar (list[dict])
+        """
         exact = self.find_exact(term)
 
         if exact:

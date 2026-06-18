@@ -1,3 +1,13 @@
+"""
+Разбиение записей базы FEText на чанки трёх типов: полная запись (record),
+текстовое описание (description) и структурная тройка вход-объект-выход
+(triple) — для последующей индексации в LanceDB.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import pandas as pd
 from pathlib import Path
 import json

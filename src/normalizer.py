@@ -1,3 +1,13 @@
+"""
+Нормализация сырых результатов LLM-извлечения: фильтрация невалидных значений,
+семантическая дедупликация входов, применение тезаурусных кандидатов и
+формирование итоговых строк полей в формате FEText.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import re
 
 
@@ -420,6 +430,14 @@ class Normalizer:
             raw_result: dict,
             thesaurus_candidates: dict
     ) -> dict:
+        """
+        Нормализует сырые результаты LLM-извлечения с учётом тезаурусных кандидатов.
+
+        :param raw_result: словарь с полями raw_inputs, raw_object, raw_outputs, conditions
+        :param thesaurus_candidates: словарь с кандидатами из ThesaurusNormalizer
+                                     (inputs, object, outputs)
+        :return: словарь со статусом и нормализованными полями input_params, object, output_params
+        """
         raw_inputs = raw_result.get("raw_inputs", []) or []
         raw_outputs = raw_result.get("raw_outputs", []) or []
         raw_object = raw_result.get("raw_object", "") or ""

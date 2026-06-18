@@ -1,3 +1,13 @@
+"""
+Основной класс RAG-пайплайна для извлечения структуры физических эффектов
+из текстов патентов: ретривал примеров, LLM-извлечение, нормализация через
+тезаурус, форматирование по стандарту FEText и верификация результата.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import logging
 
 from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
@@ -31,6 +41,13 @@ class RAGPipeline:
         self.verifier = Verifier()
 
     def run(self, query_text: str) -> dict:
+        """
+        Запускает полный пайплайн извлечения физического эффекта из текста патента.
+
+        :param query_text: текст патента на русском языке
+        :return: словарь со статусом, итоговыми полями (input_params, object, output_params),
+                 данными верификации и отладочной информацией
+        """
         query_text = normalize_text(query_text.strip())
 
         if not query_text:

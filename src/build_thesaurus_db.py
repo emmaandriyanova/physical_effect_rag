@@ -1,3 +1,13 @@
+"""
+Сборка векторной базы данных LanceDB для тезауруса физических эффектов:
+парсинг XML-файла тезауруса, генерация эмбеддингов терминов и запись
+в таблицу LanceDB для последующего семантического поиска.
+
+© 2025–2026 Андриянова Анастасия Владиславовна
+Создан: 2025
+Последнее изменение: 02.06.2026
+Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
+"""
 import xml.etree.ElementTree as ET
 import lancedb
 from sentence_transformers import SentenceTransformer
