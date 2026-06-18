@@ -18,8 +18,10 @@ KEYT5_MODEL_PATH = "/Users/emma/Desktop/диплом/для нейронки/key
 LANCEDB_PATH = "./lancedb_data"
 LANCEDB_TABLE = "physical_effects"
 
-EVAL_GROUND_TRUTH_PATH = Path("/Users/emma/PycharmProjects/PythonProject8/data/ground_truth_40.csv")
-EVAL_RAG_RESULTS_PATH = Path("/Users/emma/PycharmProjects/PythonProject8/data/results_rag.csv")
-EVAL_NO_RAG_RESULTS_PATH = Path("/Users/emma/PycharmProjects/PythonProject8/data/results_no_rag.csv")
-EVAL_COMPARISON_DETAILS_OUT = Path("/Users/emma/PycharmProjects/PythonProject8/data/comparison_ranked.csv")
-EVAL_COMPARISON_SUMMARY_OUT = Path("/Users/emma/PycharmProjects/PythonProject8/data/comparison_summary.csv")
+_DATA_DIR = Path(__file__).parent.parent / "data"
+
+EVAL_GROUND_TRUTH_PATH = _DATA_DIR / "ground_truth_40.csv"
+EVAL_RAG_RESULTS_PATH = _DATA_DIR / "results_rag.csv"
+EVAL_NO_RAG_RESULTS_PATH = _DATA_DIR / "results_no_rag.csv"
+EVAL_COMPARISON_DETAILS_OUT = _DATA_DIR / "comparison_ranked.csv"
+EVAL_COMPARISON_SUMMARY_OUT = _DATA_DIR / "comparison_summary.csv"

@@ -111,7 +111,7 @@ def parse_fetext_xml(xml_path: str) -> pd.DataFrame:
 
     df = df[df['description'] != ""]
 
-    output_path = Path(__file__).parent.parent / 'data' / 'parsed_effects.csv'
+    output_path = Path(__file__).parent.parent.parent / 'data' / 'parsed_effects.csv'
     df.to_csv(output_path, index=False, encoding='utf-8')
 
     logging.info(f"сохранено в {output_path}")
@@ -120,7 +120,7 @@ def parse_fetext_xml(xml_path: str) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    xml_file = Path(__file__).parent.parent / 'data' / 'FEText.xml'
+    xml_file = Path(__file__).parent.parent.parent / 'data' / 'FEText.xml'
 
     df = parse_fetext_xml(xml_file)
 

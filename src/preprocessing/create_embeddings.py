@@ -65,7 +65,7 @@ class EmbeddingGenerator:
 
 
 def main():
-    chunks_path = Path(__file__).parent.parent / "data" / "chunks.json"
+    chunks_path = Path(__file__).parent.parent.parent / "data" / "chunks.json"
 
     with open(chunks_path, "r", encoding="utf-8") as f:
         chunks = json.load(f)
@@ -78,7 +78,7 @@ def main():
 
     logging.info(f"форма эмбеддингов: {embeddings.shape}")
 
-    cache_dir = Path(__file__).parent.parent / "embeddings_cache"
+    cache_dir = Path(__file__).parent.parent.parent / "embeddings_cache"
     generator.save_embeddings(embeddings, chunks, cache_dir)
 
     print(f"\nсоздано {len(embeddings)} эмбеддингов размерностью {embeddings.shape[1]}")

@@ -9,10 +9,13 @@
 Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
 """
 import csv
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
-from run_pipeline import RAGPipeline
+from pipeline.run_pipeline import RAGPipeline
 
 
 def read_texts(file_path: Path) -> list[str]:

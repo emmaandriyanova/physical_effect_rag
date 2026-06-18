@@ -10,15 +10,19 @@
 """
 import logging
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID
-from retriever import FERetriever
-from thesaurus_match import ThesaurusMatcher
-from raw_extractor import RawExtractor
-from normalizer import Normalizer
-from verifier import Verifier
-from thesaurus_normalizer import ThesaurusNormalizer
-from fetext_formatter import FETextFormatter
-from text_preprocessor import normalize_text
+from .retriever import FERetriever
+from .thesaurus_match import ThesaurusMatcher
+from .raw_extractor import RawExtractor
+from .normalizer import Normalizer
+from .verifier import Verifier
+from .thesaurus_normalizer import ThesaurusNormalizer
+from .fetext_formatter import FETextFormatter
+from preprocessing.text_preprocessor import normalize_text
 
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 

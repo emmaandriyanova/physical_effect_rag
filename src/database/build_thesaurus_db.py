@@ -66,13 +66,13 @@ def load_and_prepare_xml(xml_path: str) -> ET.Element:
 
 def build_thesaurus_table():
     db_path = "./lancedb_data"
-    xml_file = Path(__file__).parent.parent / "data" / "Thes.xml"
+    xml_file = Path(__file__).parent.parent.parent / "data" / "Thes.xml"
     table_name = "thesaurus"
     embedding_model = "intfloat/multilingual-e5-small"
 
     logging.info("создание таблицы тезауруса")
 
-    db = lancedb.connect(str(Path(__file__).parent.parent / db_path))
+    db = lancedb.connect(str(Path(__file__).parent.parent.parent / db_path))
     embedder = SentenceTransformer(embedding_model)
 
     root = load_and_prepare_xml(xml_file)

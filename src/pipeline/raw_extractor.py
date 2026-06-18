@@ -13,7 +13,7 @@ import json
 import logging
 import re
 
-from lm_studio_client import LMStudioClient
+from .lm_studio_client import LMStudioClient
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 

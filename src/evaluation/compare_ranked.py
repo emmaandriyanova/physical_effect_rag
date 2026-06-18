@@ -10,12 +10,15 @@
 """
 import csv
 import re
+import sys
 import textwrap
 from collections import Counter
 from pathlib import Path
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import (
     EMBEDDING_MODEL,

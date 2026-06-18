@@ -11,7 +11,7 @@
 import re
 from typing import Optional
 
-from thesaurus_match import ThesaurusMatcher
+from .thesaurus_match import ThesaurusMatcher
 
 
 class FETextFormatter:

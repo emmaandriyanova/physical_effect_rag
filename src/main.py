@@ -32,9 +32,9 @@ logging.getLogger("httpcore").setLevel(logging.ERROR)
 logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 
 from config import LM_STUDIO_URL, LM_STUDIO_MODEL_ID, KEYT5_MODEL_PATH
-from run_pipeline import RAGPipeline
-from tech_function_extractor import TechFunctionExtractor
-from text_preprocessor import normalize_text
+from pipeline.run_pipeline import RAGPipeline
+from extraction.tech_function_extractor import TechFunctionExtractor
+from preprocessing.text_preprocessor import normalize_text
 
 BG          = "#f5f5f5"
 BG_BOT      = "#e8e8e8"

@@ -9,7 +9,7 @@
 Контакт: flomaster0909@mail.ru | github.com/emmaandriyanova
 """
 import re
-from thesaurus_match import ThesaurusMatcher
+from .thesaurus_match import ThesaurusMatcher
 
 
 class ThesaurusNormalizer:

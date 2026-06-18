@@ -172,7 +172,7 @@ def create_chunks(effect: dict) -> list[dict]:
 
 
 def main():
-    csv_path = Path(__file__).parent.parent / "data" / "parsed_effects.csv"
+    csv_path = Path(__file__).parent.parent.parent / "data" / "parsed_effects.csv"
     df = pd.read_csv(csv_path)
 
     logging.info(f"загружено {len(df)} эффектов")
@@ -184,7 +184,7 @@ def main():
 
     logging.info(f"создано {len(all_chunks)} чанков")
 
-    chunks_path = Path(__file__).parent.parent / "data" / "chunks.json"
+    chunks_path = Path(__file__).parent.parent.parent / "data" / "chunks.json"
     with open(chunks_path, "w", encoding="utf-8") as f:
         json.dump(all_chunks, f, ensure_ascii=False, indent=2)
 

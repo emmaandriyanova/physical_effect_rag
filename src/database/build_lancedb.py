@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 class LanceDBBuilder:
     def __init__(self, db_path: str = "./lancedb_data"):
-        self.db_path = Path(__file__).parent.parent / db_path
+        self.db_path = Path(__file__).parent.parent.parent / db_path
 
         if self.db_path.exists():
             shutil.rmtree(self.db_path)
@@ -105,7 +105,7 @@ class LanceDBBuilder:
 
 
 def main():
-    cache_dir = Path(__file__).parent.parent / "embeddings_cache"
+    cache_dir = Path(__file__).parent.parent.parent / "embeddings_cache"
     chunks_path = cache_dir / "chunks_with_emb.pkl"
     embeddings_path = cache_dir / "embeddings.npy"
 
