@@ -491,12 +491,10 @@ class ChatApp:
                 self.root.after(0, lambda: self._draw_btn("normal"))
             except Exception as e:
                 self._status("● ошибка загрузки", FG_ERR)
+                err_msg = f"⚠ Ошибка при загрузке моделей:\n{e}"
                 self.root.after(
                     0,
-                    lambda: self._bot_bubble(
-                        f"⚠ Ошибка при загрузке моделей:\n{e}",
-                        error=True
-                    )
+                    lambda msg=err_msg: self._bot_bubble(msg, error=True)
                 )
 
         threading.Thread(target=load, daemon=True).start()

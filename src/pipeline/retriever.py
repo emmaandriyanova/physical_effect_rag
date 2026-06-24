@@ -26,7 +26,7 @@ class FERetriever:
         table_name: str = LANCEDB_TABLE,
         embedding_model: str = EMBEDDING_MODEL
     ):
-        project_root = Path(__file__).parent.parent
+        project_root = Path(__file__).parent.parent.parent
         self.db_path = project_root / db_path
 
         self.db = lancedb.connect(str(self.db_path))
